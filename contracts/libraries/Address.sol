@@ -114,7 +114,7 @@ pragma solidity ^0.7.4;
          return _functionCallWithValue(target, data, value, errorMessage);
      }
 
-     function _functionCallWithValue(address target, bytes memory data, uint256 value, uint256 weiValue, string memory errorMessage) private returns (bytes memory) {
+     function _functionCallWithValue(address target, bytes memory data, uint256 weiValue, string memory errorMessage) private returns (bytes memory) {
          require(isContract(target), "Address: call to non-contract");
 
          // solhint-disable-next-line avoid-low-level-calls
