@@ -70,7 +70,7 @@ contract psiLockFactory {
     uint public fee;
     address factory_owner;
     address public psi_address;
-    address public uni_router;
+    address public dpex_router;
     address public sushi_router;
 
     uint balance_required;
@@ -81,7 +81,7 @@ contract psiLockFactory {
         psi_address = _PSI;
         balance_required = min_balance;
         fee = _fee;
-        uni_router = _uniRouter;
+        dpex_router = _uniRouter;
         sushi_router = _sushiRouter;
     }
     modifier only_factory_Owner() {
@@ -123,7 +123,7 @@ contract psiLockFactory {
         fee = _fee;
         toFee = _to;
         balance_required = _balance_required;
-        uni_router = _uni_router;
+        dpex_router = _uni_router;
         psi_address = _psi_address;
         sushi_router = _sushi_router;
     }
