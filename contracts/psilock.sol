@@ -101,7 +101,8 @@ contract psiLock {
     address public owner;
     address public token;
     address public _owner;
-    address public factory_address;
+    address public dpex_factory_address;
+    address public sushi_factory_address;
     uint public softCap;
     uint public hardCap;
     uint public start_date;
@@ -126,8 +127,12 @@ contract psiLock {
         _; 
     }
 
-    function setRouterAddress(address _address) public onlyOwner returns (bool) {
-        factory_address = _address;
+    function setDpex_Address(address _address) public onlyOwner returns (bool) {
+        dpex_factory_address = _address;
+    }
+
+    function setSushi_Address(address _address) public onlyOwner returns (bool) {
+        sushi_factory_address = _address;
     }
 
     mapping(address => uint) participant;
@@ -187,7 +192,7 @@ contract psiLock {
     function addLiquidity() internal returns(bool){
         uint campaign_amount = collected.mul(uint(IPsiLockFactory(factory).fee())).div(1000);
         if(rnAMM == 100){
-             if(IDpexV2Factory(address(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f)).getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0)){
+             if(IDpexV2Factory(address(dpex_factory_address)).getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0)){
         IERC20(address(token)).approve(address(IPsiLockFactory(factory).uni_router()),(hardCap.mul(rate)).div(1e18));
         if(uniswap_rate > 0){
                 IDpexV2Router02(address(IPsiLockFactory(factory).uni_router())).addLiquidityETH{value : campaign_amount.mul(uniswap_rate).div(1000)}(address(token),((campaign_amount.mul(uniswap_rate).div(1000)).mul(pool_rate)).div(1e18),0,0,address(this),block.timestamp + 100000000);
@@ -198,7 +203,7 @@ contract psiLock {
             doRefund = true;
         }
         }else if(rnAMM == 0){
-             if(IDpexV2Factory(address(0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac)).getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0)){
+             if(IDpexV2Factory(address(sushi_factory_address)).getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0)){
         IERC20(address(token)).approve(address(IPsiLockFactory(factory).sushi_router()),(hardCap.mul(rate)).div(1e18));
         if(uniswap_rate > 0){
                 IDpexV2Router02(address(IPsiLockFactory(factory).sushi_router())).addLiquidityETH{value : campaign_amount.mul(uniswap_rate).div(1000)}(address(token),((campaign_amount.mul(uniswap_rate).div(1000)).mul(pool_rate)).div(1e18),0,0,address(this),block.timestamp + 100000000);
@@ -209,7 +214,7 @@ contract psiLock {
             doRefund = true;
         }
         }else{
-                if(IDpexV2Factory(address(0xC0AEe478e3658e2610c5F7A4A2E1777cE9e4f2Ac)).getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0) && IDpexV2Factory(address(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f)).getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0) ){
+                if(IDpexV2Factory(address(sushi_factory_address)).getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0) && IDpexV2Factory(address(dpex_factory_address)).getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0) ){
                    IERC20(address(token)).approve(address(IPsiLockFactory(factory).uni_router()),(hardCap.mul(rate)).div(1e18));
                    IERC20(address(token)).approve(address(IPsiLockFactory(factory).sushi_router()),(hardCap.mul(rate)).div(1e18));
 
