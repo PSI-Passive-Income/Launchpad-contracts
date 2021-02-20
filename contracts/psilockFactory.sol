@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
 
@@ -67,7 +69,7 @@ contract psiLockFactory {
     address public toFee;
     uint public fee;
     address factory_owner;
-    address public unl_address;
+    address public psi_address;
     address public uni_router;
     address public sushi_router;
 
@@ -90,39 +92,39 @@ contract psiLockFactory {
     //   1 ETH = 1 XYZ (_pool_rate = 1e18) <=> 1 ETH = 10 XYZ (_pool_rate = 1e19) <=> XYZ (decimals = 18)
    // _data = _softCap,_hardCap,_start_date, _end_date,_rate,_min_allowed,_max_allowed
 
-    function createCampaign(uint[] memory _data,address _token,uint _pool_rate,uint _lock_duration, uint _uniswap_rate,uint _rnAMM) public returns (address campaign_address){
-        require(IERC20(address(psi_address)).balanceOf(msg.sender) >= uint(balance_required), "You don't have the minimum PSI tokens to start a campaign");
-        require(_data[0] < _data[1], "Error: soft cap can't be higher than hard cap");
-        require(_data[2] < _data[3], "Error: start date can't be higher than end date");
-        require(block.timestamp < _data[3], "Error: end date can't be higher than current date");
-        require(_data[5] < _data[1], "Error: minimum allowed can't be higher than hard cap");
-        require(_data[4] != 0, "Error: rate can't be null");
+    function createCampaign(uint[] memory _data,address _token,uint _pool_rate,uint _lock_duration,uint _uniswap_rate,uint _rnAMM) public returns (address campaign_address){
+        require(IERC20(address(psi_address)).balanceOf(msg.sender) >= uint(balance_required),"You don't have the minimum UNL tokens required to launch a campaign");
+        require(_data[0] < _data[1],"Error :  soft cap can't be higher than hard cap" );
+        require(_data[2] < _data[3] ,"Error :  start date can't be higher than end date " );
+        require(block.timestamp < _data[3] ,"Error :  end date can't be higher than current date ");
+        require(_data[5] < _data[1],"Error :  minimum allowed can't be higher than hard cap " );
+        require(_data[4] != 0,"rate can't be null");
         require(_uniswap_rate >= 0 && _uniswap_rate <= 1000);
         bytes memory bytecode = type(psiLock).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(_token, msg.sender));
         assembly {
-            campaign_address := create2(0, add(bytecode, 32), mload(bytecode), salt)
+                campaign_address := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        psiLock(campaign_address).initialiize(_data,_token,msg.sender,_pool_rate,_lock_duration,_uniswap_rate,_rnAMM);
+        psiLock(campaign_address).initilaize(_data,_token,msg.sender,_pool_rate,_lock_duration,_uniswap_rate,_rnAMM);
         campaigns.push(campaign_address);
-        require(transferToCampaign(_data[1],_data[4],_pool_rate,_token,campaign_address,_uniswap_rate), "unable to transfer funds");
+        require(transferToCampaign(_data[1],_data[4],_pool_rate,_token,campaign_address,_uniswap_rate),"unable to transfer funds");
         return campaign_address;
     }
-    function transferToCampaign(uint _data1, uint _data4, uint _pool_rate,address _token,address _campaign_addres, uint _uniswap_rate) internal returns(bool) {
+    function transferToCampaign(uint _data1, uint _data4, uint _pool_rate,address _token,address _campaign_address, uint _uniswap_rate) internal returns(bool) {
         require(ApproveTransferTo((_data1.mul(_data4).div(1e18)),_uniswap_rate,_data1,_token,_campaign_address,_pool_rate));
         return true;
     }
     function ApproveTransferTo(uint _data,uint _uniswap_rate, uint _data1, address _token,address _campaign_address,uint _pool_rate) internal returns(bool){
-        require(IERC20(address(_token)).transferFrom(msg.sender,address(_campaign_address),_data.add((_data.mul(_uniswap_rate)).mul(pool_rate).div(1e21))), "unable to transfer token amount to the campaign");
+        require(IERC20(address(_token)).transferFrom(msg.sender,address(_campaign_address),_data.add((_data1.mul(_uniswap_rate)).mul(_pool_rate).div(1e21))), "unable to transfer token amount to the campaign");
         return true;
     }
 
-    function changeConfig(uint _fee,address _to,uint _balance_required,address _uni_router,address _unl_address,address _sushi_router) public only_factory_Owner returns(uint){
+    function changeConfig(uint _fee,address _to,uint _balance_required,address _uni_router,address _psi_address,address _sushi_router) public only_factory_Owner returns(uint){
         fee = _fee;
         toFee = _to;
         balance_required = _balance_required;
         uni_router = _uni_router;
-        unl_address = _unl_address;
-        suhsi_router = _sushi_router;
+        psi_address = _psi_address;
+        sushi_router = _sushi_router;
     }
 }

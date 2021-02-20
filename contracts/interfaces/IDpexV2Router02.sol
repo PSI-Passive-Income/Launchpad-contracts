@@ -1,4 +1,6 @@
-pragma solidity ^0.7.4
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.7.4;
 
 interface IDpexV2Router02 {
     function addLiquidityETH(
@@ -9,7 +11,7 @@ interface IDpexV2Router02 {
         address to,
         uint deadline 
     ) external payable returns (uint amountToken, uint amountETH, uint liquidity);
-}}
+}
 
 interface IDpexV2Factory {
     function getPair(address tokenA, address tokenB) external view returns (address pair);

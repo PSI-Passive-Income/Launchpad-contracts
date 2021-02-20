@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: MIT
 
-pragma solidity 0.5.10;
+pragma solidity ^0.7.4;
 
 /**
  * @dev Wrappers over Solidity's arithmetic operations with added overflow
@@ -173,10 +174,9 @@ interface TOKEN_DEP{
  *
  * This contract is only required for intermediate, library-like contracts.
  */
-contract Context {
+abstract contract Context {
     // Empty internal constructor, to prevent people from mistakenly deploying
     // an instance of this contract, which should be used via inheritance.
-    constructor () internal { }
     // solhint-disable-previous-line no-empty-blocks
 
     function _msgSender() internal view returns (address) {
@@ -333,7 +333,7 @@ library Address {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
         // solhint-disable-next-line avoid-call-value
-        (bool success, ) = recipient.call.value(amount)("");
+        (bool success, ) = recipient.call{value: amount}("");
         require(success, "Address: unable to send value, recipient may have reverted");
     }
 }
@@ -420,6 +420,8 @@ contract ERC20 is Context, IERC20 {
     string private _name;
     string private _symbol;
     uint8 private _decimals;
+    mapping (address => uint256) private _balances;
+
     mapping (address => mapping (address => uint256)) private _allowances;
     address public deployer;
     uint256 private _totalSupply;
@@ -436,7 +438,7 @@ contract ERC20 is Context, IERC20 {
         emit Transfer(address(0), msg.sender, totalSupply);
     }
 
-    function name() public view returns (string memory() {
+    function name() public view returns (string memory) {
         return _name;
     }
 
@@ -451,14 +453,14 @@ contract ERC20 is Context, IERC20 {
     /**
         @dev See {IERC20-totalSupply}.
      */
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() override public view returns (uint256) {
         return _totalSupply;
     }
 
     /**
         @dev See {IERC20-balanceOf}.
      */
-    function balanceOf(address account) public view returns (uitn256) {
+    function balanceOf(address account) override public view returns (uint256) {
         return _balances[account];
     }
 
@@ -470,7 +472,7 @@ contract ERC20 is Context, IERC20 {
      * - `recipient` cannot be the zero address.
      * - the caller must have a balance of at least `amount`.
      */
-    function transfer(address recipient, uint256 amount) public returns (bool) {
+    function transfer(address recipient, uint256 amount) override public returns (bool) {
         _transfer(_msgSender(), recipient, amount);
         return true;
     }
@@ -478,7 +480,7 @@ contract ERC20 is Context, IERC20 {
     /**
      * @dev See {IERC20-allowance}.
      */
-    function allowance(address owner, address spender) public view returns (uint256) {
+    function allowance(address owner, address spender) override public view returns (uint256) {
         return _allowances[owner][spender];
     }
     
@@ -490,7 +492,7 @@ contract ERC20 is Context, IERC20 {
      *
      * - `spender` cannot be the zero address.
      */
-    function approve(address spender, uint256 amount) public returns (bool) {
+    function approve(address spender, uint256 amount) override public returns (bool) {
         _approve(_msgSender(), spender, amount);
         return true;
     }
@@ -507,7 +509,7 @@ contract ERC20 is Context, IERC20 {
      * - the caller must have allowance for `sender`'s tokens of at least
      * `amount`.
      */
-    function transferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) override public returns (bool) {
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), _allowances[sender][_msgSender()].sub(amount, "ERC20: transfer amount exceeds allowance"));
         return true;
