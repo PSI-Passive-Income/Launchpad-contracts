@@ -75,13 +75,13 @@ contract psiLockFactory {
 
     uint balance_required;
 
-    constructor(address _PSI,uint min_balance,uint _fee,address _uniRouter,address _sushiRouter) public {
+    constructor(address _PSI,uint min_balance,uint _fee,address _dpexRouter,address _sushiRouter) public {
         factory_owner = msg.sender;
         toFee = msg.sender;
         psi_address = _PSI;
         balance_required = min_balance;
         fee = _fee;
-        dpex_router = _uniRouter;
+        dpex_router = _dpexRouter;
         sushi_router = _sushiRouter;
     }
     modifier only_factory_Owner() {
@@ -105,7 +105,7 @@ contract psiLockFactory {
         assembly {
                 campaign_address := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
-        psiLock(campaign_address).initilaize(_data,_token,msg.sender,_pool_rate,_lock_duration,_uniswap_rate,_rnAMM);
+        psiLock(campaign_address).initilaize(_data,_token,msg.sender,_pool_rate,_lock_duration,_uniswap_rate,_rnAMM, dpex_router, sushi_router);
         campaigns.push(campaign_address);
         require(transferToCampaign(_data[1],_data[4],_pool_rate,_token,campaign_address,_uniswap_rate),"unable to transfer funds");
         return campaign_address;

@@ -100,7 +100,7 @@ contract psiLock {
     uint public unlock_date = 0;
     address public owner;
     address public token;
-    address public _owner;
+    address public _owner = msg.sender;
     address public dpex_factory_address;
     address public sushi_factory_address;
     uint public softCap;
@@ -121,24 +121,10 @@ contract psiLock {
         factory = msg.sender;
     }
 
-
-    modifier onlyOwner() {  
-        require(msg.sender == _owner);
-        _; 
-    }
-
-    function setDpex_Address(address _address) public onlyOwner returns (bool) {
-        dpex_factory_address = _address;
-    }
-
-    function setSushi_Address(address _address) public onlyOwner returns (bool) {
-        sushi_factory_address = _address;
-    }
-
     mapping(address => uint) participant;
     
     // Initialize a new campaign (can only be triggered by the factory contract)
-     function initilaize(uint[] calldata _data,address _token,address _owner_Address,uint _pool_rate,uint _lock_duration,uint _uniswap_rate,uint _rnAMM) external returns (uint){
+     function initilaize(uint[] calldata _data,address _token,address _owner_Address,uint _pool_rate,uint _lock_duration,uint _uniswap_rate,uint _rnAMM, address dpex_address, address sushi_address) external returns (uint){
         require(msg.sender == factory,'You are not allowed to initialize a new Campaign');
         owner = _owner_Address; 
         softCap = _data[0];
@@ -153,6 +139,8 @@ contract psiLock {
         lock_duration = _lock_duration;
         uniswap_rate = _uniswap_rate;
         rnAMM = _rnAMM;
+        dpex_factory_address = dpex_address;
+        sushi_factory_address = sushi_factory_address;
     }
 
     function buyTokens() public payable returns (uint){
