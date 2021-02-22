@@ -27,3 +27,36 @@ function createCampaign(uint[] memory _data,address _token,uint _pool_rate,uint 
  }
 
 ```
+
+###  psiLock/buyTokens(...)
+Calling this function will trasnfer tokens from participent and stores deposit
+
+```solidity
+function buyTokens() public payable returns (uint){
+  /**
+  * Let participant chose how much the would like to buy and then set it with {value : ...} when you call the function.
+  */
+}
+```
+
+### psiLock/getGivenAmmount(...)
+Calling this function will return a participants amount deposited in the given campaign
+
+```solidity
+function getGivenAmount(address _address){
+  /**
+  * When calling the function, specify the address of the campaign that the participant would like to view.
+  */
+}
+```
+
+### psiLock/getRemaining(...)
+Calling this function will return the remaining funds needed to raise for a given campaign.
+
+```solidity
+function getRemaining(address _address){
+  /**
+  * When calling this function, specify the address of the campaing the participant would like to view.
+  */
+}
+```
