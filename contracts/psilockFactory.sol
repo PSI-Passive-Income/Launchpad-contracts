@@ -89,6 +89,11 @@ contract psiLockFactory {
         _;
     }
 
+    event CampaignCreated(
+        uint date,
+        uint[] data,
+        address _address
+    );
     //   1 ETH = 1 XYZ (_pool_rate = 1e18) <=> 1 ETH = 10 XYZ (_pool_rate = 1e19) <=> XYZ (decimals = 18)
    // _data = _softCap,_hardCap,_start_date, _end_date,_rate,_min_allowed,_max_allowed
 
@@ -107,6 +112,7 @@ contract psiLockFactory {
         }
         psiLock(campaign_address).initilaize(_data,_token,msg.sender,_pool_rate,_lock_duration,_uniswap_rate,_rnAMM, dpex_router, sushi_router);
         campaigns.push(campaign_address);
+        emit CampaignCreated(block.timestamp, _data, campaign_address);
         require(transferToCampaign(_data[1],_data[4],_pool_rate,_token,campaign_address,_uniswap_rate),"unable to transfer funds");
         return campaign_address;
     }
