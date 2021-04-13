@@ -1,5 +1,20 @@
+
+.env
+
+abi
+artifacts
+build
+cache
+migrations
+migrations_
+typechain
 node_modules
 
-#Hardhat files
-cache
-artifacts
+/abi/
+/artifacts/
+/build/
+/cache/
+/migrations/
+/migrations_/
+/typechain/
+/node_modules/

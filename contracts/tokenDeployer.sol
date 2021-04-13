@@ -1,38 +1,39 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.7.4;
+pragma solidity ^0.7.4;
 
-import './tokenModel.sol';
+import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
+import './TokenModel.sol';
+import "./interfaces/IPsiLockFactory.sol";
 
-interface IFactory {
-   function createCampaign(uint[] calldata _data,address _token,uint _pool_rate,uint _lock_duration,uint _uniswap_rate) external returns (address campaign_address);
-}
-
-
-contract tokenDeployer {
+contract TokenDeployer is Initializable {
      address public campaignFactory;
      address[] public Tokens;
 
-    
-    constructor(address _campaignFactory) public
-    {
-        
+    function initialize(address _campaignFactory) external initializer {
         campaignFactory = _campaignFactory;
     }
-    function createTokenWithCampaign(string memory _name, string memory _symbol, uint8 _decimals,uint _totalSupply,uint[] memory _data,uint _pool_rate,uint _lock_duration,uint _uniswap_rate) public returns(address token_address){
-     bytes memory bytecode = type(ERC20).creationCode;
-     bytes32 salt = keccak256(abi.encodePacked(_name, msg.sender));
-     assembly {
+
+    function createTokenWithCampaign(
+        string memory _name,
+        string memory _symbol,
+        uint8 _decimals,
+        uint256 _totalSupply,
+        uint256[] memory _data,
+        uint256 _pool_rate,
+        uint256 _lock_duration,
+        uint256 _dpex_rate
+    ) public returns(address token_address) {
+        bytes memory bytecode = type(ERC20).creationCode;
+        bytes32 salt = keccak256(abi.encodePacked(_name, msg.sender));
+        assembly {
             token_address := create2(0, add(bytecode, 32), mload(bytecode), salt)
-     }
-     ERC20(token_address).initialize(_name,_symbol,_decimals,_totalSupply);
-     IERC20(token_address).approve(campaignFactory,IERC20(token_address).balanceOf(address(this)));
-     IFactory(campaignFactory).createCampaign(_data,token_address,_pool_rate,_lock_duration,_uniswap_rate);
-     IERC20(token_address).transfer(msg.sender,IERC20(token_address).balanceOf(address(this)));
-     Tokens.push(token_address);
-     return token_address;
-        
+        }
+        ERC20(token_address).initialize(_name,_symbol,_decimals,_totalSupply);
+        IERC20(token_address).approve(campaignFactory,IERC20(token_address).balanceOf(address(this)));
+        IPsiLockFactory(campaignFactory).createCampaign(_data,token_address,_pool_rate,_lock_duration,_dpex_rate);
+        IERC20(token_address).transfer(msg.sender,IERC20(token_address).balanceOf(address(this)));
+        Tokens.push(token_address);
+        return token_address;
     }
-
-
 }
