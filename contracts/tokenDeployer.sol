@@ -3,7 +3,7 @@
 pragma solidity ^0.7.4;
 
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import './TokenModel.sol';
+import './tokenModel.sol';
 import "./interfaces/IPsiLockFactory.sol";
 
 contract TokenDeployer is Initializable {

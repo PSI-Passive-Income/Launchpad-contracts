@@ -3,9 +3,7 @@
 pragma solidity ^0.7.4;
 
 interface IPsiLockFactory {
-    function fee() external view returns(uint256);
     function dpex_router() external view returns(address);
-    function toFee() external view returns(address);
     function createCampaign(
         uint256[] memory _data,
         address _token,

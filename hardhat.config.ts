@@ -26,29 +26,10 @@ const config: HardhatUserConfig = {
       url: `http://127.0.0.1:8545`,
       accounts: [`0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`]
     },
-    kovan: {
-      url: `${process.env.KOVAN_INFURA}`,
-      accounts: [`0x${process.env.KOVAN_PRIVATE_KEY}`]
-    },
-    goerli: {
-      url: `${process.env.GOERLI_INFURA}`,
-      accounts: [`0x${process.env.GOERLI_PRIVATE_KEY}`]
-    },
-    mainnet: {
-      url: `${process.env.MAIN_INFURA}`,
-      accounts: [`0x${process.env.MAIN_PRIVATE_KEY}`],
-      // gasPrice: 200000000000
-    },
     bsctestnet: {
       url: "https://data-seed-prebsc-1-s2.binance.org:8545",
       chainId: 97,
       accounts: [`0x${process.env.BSC_TEST_PRIVATE_KEY}`],
-      gasPrice: 15000000000,
-    },
-    bscmainnet: {
-      url: "https://bsc-dataseed.binance.org/",
-      chainId: 56,
-      accounts: [`0x${process.env.BSC_PRIVATE_KEY}`],
       gasPrice: 15000000000,
     },
     ganache: {

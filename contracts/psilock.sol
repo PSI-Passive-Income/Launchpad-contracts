@@ -32,7 +32,7 @@ contract PsiLock is Initializable {
     uint256 public pool_rate;
     uint256 public lock_duration;
     uint256 public uniswap_rate;
-
+    bool public finalized = false;
     bool public doRefund = false;
 
     constructor() {
@@ -82,6 +82,11 @@ contract PsiLock is Initializable {
             (msg.value <= getRemaining()), 'The contract has insufficient funds or you are not allowed');
         participant[msg.sender] = participant[msg.sender].add(msg.value);
         collected = (collected).add(msg.value);
+
+        if(collected >= hardCap) {
+            finalized = true;
+        }
+
         return 1;
     }
     function withdrawTokens() public returns (uint256){
@@ -107,13 +112,14 @@ contract PsiLock is Initializable {
         require(!isLive(), 'Presale is still live');
         require(!failed(), "Presale failed, can't lock liqudity");
         require(softCap <= collected, "Didn't reach soft cap");
+        require(finalized, "contract cannot be finalized");
         require(addLiquidity(), "error adding liqudity to uniswap");
         locked = 1;
         unlock_date = (block.timestamp).add(lock_duration);
         return 1;
     }
     function addLiquidity() internal returns(bool){
-        uint256 campaign_amount = collected.mul(uint(IPsiLockFactory(factory).fee())).div(1000);
+        uint256 campaign_amount = collected;
         if(IDPexFactory(address(dpex_factory_address))
             .getPair(token,address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2)) == address(0)) {
 
@@ -132,7 +138,6 @@ contract PsiLock is Initializable {
                         address(this),block.timestamp + 100000000
                     );
             }
-            payable(IPsiLockFactory(factory).toFee()).transfer(collected.sub(campaign_amount));
             payable(owner).transfer(campaign_amount.sub(campaign_amount.mul(uniswap_rate).div(1000)));
         } else {
             doRefund = true;
@@ -140,6 +145,11 @@ contract PsiLock is Initializable {
         return true;
     }
 
+            function emergencyFinalize() public returns(bool){
+        require(msg.sender == owner);
+        require((hardCap - collected) < min_allowed, "min deposit is still avaliable");
+        finalized = true;
+    } 
 
         // Check whether the campaign failed
 
@@ -155,9 +165,8 @@ contract PsiLock is Initializable {
         function withdrawFunds() public returns(uint256){
             require(failed() || doRefund, "campaign didn't fail");
             require(participant[msg.sender] > 0, "You didn't participate in the campaign");
-            uint256 withdrawAmount = participant[msg.sender].mul(uint(IPsiLockFactory(factory).fee())).div(1000);
+            uint256 withdrawAmount = participant[msg.sender];
             (msg.sender).transfer(withdrawAmount);
-            payable(IPsiLockFactory(factory).toFee()).transfer(participant[msg.sender].sub(withdrawAmount));
             participant[msg.sender] = 0;
             return withdrawAmount;
         }  

@@ -1,64 +1,40 @@
 {
   "manifestVersion": "3.1",
   "impls": {
-    "8082c4072b96961d0e2daa3bfbed559dfd3b368a5b9b063a55e86f07940cbd12": {
+    "64683470db18c05479947380e1675a221dd429b6a9d85a2d63f7a5165e6b52c6": {
       "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "txHash": "0x64780f129e4da980b4ac9a93e16a4d5112f93d2600b8873ba91f141cf8045a97",
+      "txHash": "0xf755eacab064cefa1b50725ca55a3a2ae320fdc801a45bde911205c77d5f1a83",
       "layout": {
         "storage": [
           {
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
           },
           {
             "contract": "PsiLockFactory",
             "label": "campaigns",
             "type": "t_array(t_address)dyn_storage",
-            "src": "contracts\\PsiLockFactory.sol:15"
-          },
-          {
-            "contract": "PsiLockFactory",
-            "label": "toFee",
-            "type": "t_address",
-            "src": "contracts\\PsiLockFactory.sol:16"
-          },
-          {
-            "contract": "PsiLockFactory",
-            "label": "fee",
-            "type": "t_uint256",
-            "src": "contracts\\PsiLockFactory.sol:17"
+            "src": "contracts/psilockFactory.sol:15"
           },
           {
             "contract": "PsiLockFactory",
             "label": "factory_owner",
             "type": "t_address",
-            "src": "contracts\\PsiLockFactory.sol:18"
-          },
-          {
-            "contract": "PsiLockFactory",
-            "label": "psi_address",
-            "type": "t_address",
-            "src": "contracts\\PsiLockFactory.sol:19"
+            "src": "contracts/psilockFactory.sol:16"
           },
           {
             "contract": "PsiLockFactory",
             "label": "dpex_router",
             "type": "t_address",
-            "src": "contracts\\PsiLockFactory.sol:20"
-          },
-          {
-            "contract": "PsiLockFactory",
-            "label": "balance_required",
-            "type": "t_uint256",
-            "src": "contracts\\PsiLockFactory.sol:22"
+            "src": "contracts/psilockFactory.sol:17"
           }
         ],
         "types": {
@@ -68,43 +44,40 @@
           "t_address": {
             "label": "address"
           },
-          "t_uint256": {
-            "label": "uint256"
-          },
           "t_bool": {
             "label": "bool"
           }
         }
       }
     },
-    "878da0153858e70a64029b1ec6b098bb19ec7907d86557d3c5b055681e6cbdfd": {
+    "1744342ebaab8a73673a9b083b8a28c9c835e0c81158f9052b4c16e45762898a": {
       "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      "txHash": "0xc748f171e57f02bbb64e6fc994f2c65c9f5d6d819e0ae3ec46741d251e538b49",
+      "txHash": "0x095f8cd4d1cc203d42a5a87ddcfa9bc502bc16fa41017906c3b43171966c5855",
       "layout": {
         "storage": [
           {
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
           },
           {
             "contract": "TokenDeployer",
             "label": "campaignFactory",
             "type": "t_address",
-            "src": "contracts\\TokenDeployer.sol:10"
+            "src": "contracts/tokenDeployer.sol:10"
           },
           {
             "contract": "TokenDeployer",
             "label": "Tokens",
             "type": "t_array(t_address)dyn_storage",
-            "src": "contracts\\TokenDeployer.sol:11"
+            "src": "contracts/tokenDeployer.sol:11"
           }
         ],
         "types": {
@@ -120,54 +93,39 @@
         }
       }
     },
-    "602266896e6c3112a886b831be79af704e7c85ae99318019ccaab2cc3e09b63e": {
+    "7b40309ab6101eca14195eeb05d4111ddfcd7b4cbebba5170ac392b1ff4d65a6": {
       "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-      "txHash": "0xab1c886097f4a4c5191f1c2bf67f1d7e1aa1913e95978dc72577253f0c04b28b",
+      "txHash": "0xc60dc700fe1dfb57ac70ed0db6f46a96b87d041afc9c2e8451e849678be7b0d1",
       "layout": {
         "storage": [
           {
             "contract": "Initializable",
             "label": "_initialized",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:25"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:25"
           },
           {
             "contract": "Initializable",
             "label": "_initializing",
             "type": "t_bool",
-            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\Initializable.sol:30"
+            "src": "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol:30"
           },
           {
             "contract": "TokenLockFactory",
             "label": "factory_owner",
             "type": "t_address",
-            "src": "contracts\\TokenLockFactory.sol:13"
-          },
-          {
-            "contract": "TokenLockFactory",
-            "label": "unl_address",
-            "type": "t_address",
-            "src": "contracts\\TokenLockFactory.sol:14"
-          },
-          {
-            "contract": "TokenLockFactory",
-            "label": "balance_required",
-            "type": "t_uint256",
-            "src": "contracts\\TokenLockFactory.sol:15"
+            "src": "contracts/TokenLockFactory.sol:13"
           },
           {
             "contract": "TokenLockFactory",
             "label": "totalLockedTokens",
             "type": "t_mapping(t_address,t_address)",
-            "src": "contracts\\TokenLockFactory.sol:16"
+            "src": "contracts/TokenLockFactory.sol:14"
           }
         ],
         "types": {
           "t_address": {
             "label": "address"
-          },
-          "t_uint256": {
-            "label": "uint256"
           },
           "t_mapping(t_address,t_address)": {
             "label": "mapping(address => address)"
@@ -181,6 +139,6 @@
   },
   "admin": {
     "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "txHash": "0x52c9be0ab70f72512f49bb48732a9065e7375148954544397ec32cd4022ff196"
+    "txHash": "0x77fd8c58111e1ff120ca4e285e1e2904f923b64b33f16580f986d100fc661ae7"
   }
 }

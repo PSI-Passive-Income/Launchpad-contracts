@@ -6,37 +6,24 @@ pragma experimental ABIEncoderV2;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/Initializable.sol";
-import './PsiLock.sol';
+import './psilock.sol';
 import './interfaces/IPsiLockFactory.sol';
 
 contract PsiLockFactory is IPsiLockFactory, Initializable {
     using AddressUpgradeable for address;
     using SafeMath for uint;
     address[] public campaigns;
-    address public override toFee;
-    uint256 public override fee;
     address factory_owner;
-    address public psi_address;
     address public override dpex_router;
-
-    uint256 balance_required;
-
     modifier only_factory_Owner() {
         require(factory_owner == msg.sender, 'You are not the owner');
         _;
     }
 
     function initialize(
-        address _PSI,
-        uint256 min_balance,
-        uint256 _fee,
         address _dpexRouter
     ) external initializer {
         factory_owner = msg.sender;
-        toFee = msg.sender;
-        psi_address = _PSI;
-        balance_required = min_balance;
-        fee = _fee;
         dpex_router = _dpexRouter;
     }
 
@@ -50,8 +37,6 @@ contract PsiLockFactory is IPsiLockFactory, Initializable {
         uint256 _lock_duration,
         uint256 _dpex_rate
     ) public override returns (address campaign_address) {
-        require(IERC20(address(psi_address)).balanceOf(msg.sender) >= uint(balance_required),
-            "You don't have the minimum UNL tokens required to launch a campaign");
         require(_data[0] < _data[1],"Error :  soft cap can't be higher than hard cap" );
         require(_data[2] < _data[3] ,"Error :  start date can't be higher than end date " );
         require(block.timestamp < _data[3] ,"Error :  end date can't be higher than current date ");
@@ -103,17 +88,9 @@ contract PsiLockFactory is IPsiLockFactory, Initializable {
     }
 
     function changeConfig(
-        uint256 _fee,
-        address _to,
-        uint256 _balance_required,
-        address _dpex_router,
-        address _psi_address
+        address _dpex_router
     ) public only_factory_Owner returns(bool) {
-        fee = _fee;
-        toFee = _to;
-        balance_required = _balance_required;
         dpex_router = _dpex_router;
-        psi_address = _psi_address;
         return true;
     }
 }

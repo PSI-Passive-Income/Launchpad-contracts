@@ -27,7 +27,7 @@ const main = async() => {
   console.log("deploying");
 
   const PsiLockFactory = await ethers.getContractFactory("PsiLockFactory");
-  const psiLockFactory: PsiLockFactory = await upgrades.deployProxy(PsiLockFactory, [psi, ethers.utils.parseUnits("1000", 18), BigNumber.from(1), router], { initializer: 'initialize' }) as PsiLockFactory;
+  const psiLockFactory: PsiLockFactory = await upgrades.deployProxy(PsiLockFactory, [router], { initializer: 'initialize' }) as PsiLockFactory;
   await psiLockFactory.deployed();
   console.log("PsiLockFactory deployed to:", psiLockFactory.address);
 
@@ -37,7 +37,7 @@ const main = async() => {
   console.log("TokenDeployer deployed to:", tokenDeployer.address);
 
   const TokenLockFactory = await ethers.getContractFactory("TokenLockFactory");
-  const tokenLockFactory: TokenLockFactory = await upgrades.deployProxy(TokenLockFactory, [psi, ethers.utils.parseUnits("10", 9)], { initializer: 'initialize' }) as TokenLockFactory;
+  const tokenLockFactory: TokenLockFactory = await upgrades.deployProxy(TokenLockFactory, { initializer: 'initialize' }) as TokenLockFactory;
   await tokenLockFactory.deployed();
   console.log("TokenLockFactory deployed to:", tokenLockFactory.address);
 }
