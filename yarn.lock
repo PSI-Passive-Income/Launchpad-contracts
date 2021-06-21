@@ -1486,10 +1486,20 @@
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-3.4.1.tgz#38dfdfa86fda0a088c6fcdebe6870cfaf897b471"
   integrity sha512-wBGlUzEkOxcj/ghtcF2yKc8ZYh+PTUtm1mK38zoENulJ6aplij7eH8quo3lMugfzPJy+V6V5qI8QhdQmCn7hkQ==
 
+"@openzeppelin/contracts-upgradeable@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.1.0.tgz#36a6113ceeda278ae14f740280e5388161dfd383"
+  integrity sha512-QZSvbYqNpU/x60vARhq/jghh97VWjml3NAlKfu4u1XehvpEBbHVXJyKTBSZtZY7jviG305jOczEisnN8VeOMcw==
+
 "@openzeppelin/contracts@^3.3.0-solc-0.7":
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.1.tgz#03c891fec7f93be0ae44ed74e57a122a38732ce7"
   integrity sha512-cUriqMauq1ylzP2TxePNdPqkwI7Le3Annh4K9rrpvKfSBB/bdW+Iu1ihBaTIABTAAJ85LmKL5SSPPL9ry8d1gQ==
+
+"@openzeppelin/contracts@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.1.0.tgz#baec89a7f5f73e3d8ea582a78f1980134b605375"
+  integrity sha512-TihZitscnaHNcZgXGj9zDLDyCqjziytB4tMCwXq0XimfWkAjBYyk5/pOsDbbwcavhlc79HhpTEpQcrMnPVa1mw==
 
 "@openzeppelin/hardhat-upgrades@^1.5.0":
   version "1.6.0"
@@ -1555,10 +1565,10 @@
     hardhat-dependency-compiler "^1.1.1"
     hardhat-tracer "^1.0.0-alpha.2"
 
-"@passive-income/dpex-peripheral@~1.1.6":
-  version "1.1.6"
-  resolved "https://registry.yarnpkg.com/@passive-income/dpex-peripheral/-/dpex-peripheral-1.1.6.tgz#c1ef1c0361115f1949fa826122deaf2248091435"
-  integrity sha512-YOHyAL8FgrIQvY1KT6mHzrogU6Pvw/WZSDnFQcXBTEv4YmnnO5XSFOKdn5mjGxEH/nFJY0gg40s7+IHuGPf5Wg==
+"@passive-income/dpex-peripheral@1.1.9", "@passive-income/dpex-peripheral@~1.1.9":
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/@passive-income/dpex-peripheral/-/dpex-peripheral-1.1.9.tgz#335de2229d90735f7909e2cc880dcc1a1dfdc6a6"
+  integrity sha512-KfEu5yYncsV2LZXNosCU7xUkYgxCHJomrhqBZz7mDRj/g5SJ6G0ZTwfFomYYG9D59Gh5IE3D29Ov34uwG666vw==
   dependencies:
     "@openzeppelin/contracts" "^3.3.0-solc-0.7"
     "@openzeppelin/contracts-upgradeable" "^3.3.0-solc-0.7"
@@ -1578,6 +1588,18 @@
     "@openzeppelin/contracts-upgradeable" "^3.3.0-solc-0.7"
     "@openzeppelin/test-helpers" "^0.5.10"
     "@passive-income/psi-contracts" "~1.0.2"
+    "@truffle/hdwallet-provider" "^1.2.1"
+    dotenv "^8.2.0"
+
+"@passive-income/psi-contracts@~1.0.10":
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/@passive-income/psi-contracts/-/psi-contracts-1.0.10.tgz#0e7cbb4cddbb26255c90e64822a72bf87db040dd"
+  integrity sha512-uMTHu8Qox+i3w8pkeNZNyueRz8W+4G2s1PiSPUDv3UpIbHU53sBeU2gfPCsyzjWBboIfBgBvtImUv5chw8NXSw==
+  dependencies:
+    "@openzeppelin/contracts" "^3.3.0-solc-0.7"
+    "@openzeppelin/contracts-upgradeable" "^3.3.0-solc-0.7"
+    "@openzeppelin/test-helpers" "^0.5.10"
+    "@passive-income/dpex-peripheral" "1.1.9"
     "@truffle/hdwallet-provider" "^1.2.1"
     dotenv "^8.2.0"
 
@@ -3414,7 +3436,7 @@ async-eventemitter@^0.2.2:
   dependencies:
     async "^2.4.0"
 
-"async-eventemitter@github:ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c":
+async-eventemitter@ahultgren/async-eventemitter#fa06e39e56786ba541c180061dbf2c0a5bbf951c:
   version "0.2.3"
   resolved "https://codeload.github.com/ahultgren/async-eventemitter/tar.gz/fa06e39e56786ba541c180061dbf2c0a5bbf951c"
   dependencies:
@@ -13055,10 +13077,10 @@ solc@^0.6.3:
     semver "^5.5.0"
     tmp "0.0.33"
 
-solc@^0.7.6:
-  version "0.7.6"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.7.6.tgz#21fc5dc11b85fcc518c181578b454f3271c27252"
-  integrity sha512-WsR/W7CXwh2VnmZapB4JrsDeLlshoKBz5Pz/zYNulB6LBsOEHI2Zj/GeKLMFcvv57OHiXHvxq5ZOQB+EdqxlxQ==
+solc@^0.8.4:
+  version "0.8.4"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.4.tgz#c7e606e5fc07f3fe37414bc3dd868404399ea8bb"
+  integrity sha512-krEdbucX9yY362l79gXTK2UHhsZ02aQjQOYTzcgTd/waApueo3yWGzjX0CDJ1ByOuW46WuKAyzfbRWdFNr6OYQ==
   dependencies:
     command-exists "^1.2.8"
     commander "3.0.2"

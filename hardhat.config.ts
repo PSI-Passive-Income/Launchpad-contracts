@@ -55,7 +55,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       { 
-        version: "0.7.4",
+        version: "0.8.4",
         settings: {
           optimizer: {
             enabled: true,
@@ -63,23 +63,14 @@ const config: HardhatUserConfig = {
           }
         } 
       },
-      {
-        version: "0.5.16",
+      { 
+        version: "0.7.4",
         settings: {
           optimizer: {
             enabled: true,
-            runs: 50
+            runs: 30000
           }
-        }
-      },
-      {
-        version: "0.4.18",
-        settings: {
-          optimizer: {
-            enabled: false,
-            runs: 200
-          }
-        }
+        } 
       }
     ],
   },
@@ -88,15 +79,6 @@ const config: HardhatUserConfig = {
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts"
-  },
-  dependencyCompiler: {
-    paths: [
-      '@passive-income/dpex-swap-core/contracts/DPexFactory.sol',
-      '@passive-income/dpex-swap-core/contracts/DPexPairInitHash.sol',
-      '@passive-income/psi-contracts/contracts/PSI.sol',
-      '@passive-income/psi-contracts/contracts/PSIGovernance.sol',
-      '@passive-income/psi-contracts/contracts/FeeAggregator.sol'
-    ],
   },
   contractSizer: {
     alphaSort: false,
