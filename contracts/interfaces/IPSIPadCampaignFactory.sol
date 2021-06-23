@@ -20,14 +20,37 @@ interface IPSIPadCampaignFactory {
     function setStableCoinFee(uint256 _stable_coin_fee) external;
     function setTokenFee(uint256 _token_fee) external;
 
+    event CampaignAdded(address indexed campaign, address indexed token, address indexed owner);
+    event CampaignLocked(address indexed campaign, address indexed token, uint256 indexed collected);
+    event CampaignUnlocked(address indexed campaign, address indexed token);
+
+    function getUserCampaigns(address user) external view returns(uint256[] memory);
+
+    /**
+     * @notice Start a new campaign using
+     * @dev 1 ETH = 1 XYZ (_pool_rate = 1e18) <=> 1 ETH = 10 XYZ (_pool_rate = 1e19) <=> XYZ (decimals = 18)
+     */
     function createCampaign(
         IPSIPadCampaign.CampaignData calldata _data,
         address _token,
         uint256 _tokenFeePercentage
     ) external returns (address campaign_address);
 
+    /**
+     * @notice calculates how many tokens are needed to start an campaign
+     */
     function tokensNeeded(
         IPSIPadCampaign.CampaignData calldata _data,
         uint256 _tokenFeePercentage
-    ) external view returns (uint256 _tokensNeeded);
+    ) external pure returns (uint256 _tokensNeeded);
+
+    /**
+     * @notice Add liqudity to an exchange and burn the remaining tokens, 
+     * can only be executed when the campaign completes
+     */
+    function lock(uint256 campaignId) external;
+    /**
+     * @notice allows the owner to unlock the LP tokens and any leftover tokens after the lock has ended
+     */
+    function unlock(uint256 campaignId) external;
 }

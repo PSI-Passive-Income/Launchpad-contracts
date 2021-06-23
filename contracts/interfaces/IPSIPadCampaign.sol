@@ -34,6 +34,10 @@ interface IPSIPadCampaign {
     function finalized() external view returns(bool);
     function doRefund() external view returns(bool);
 
+    event Initialized(address indexed campaign, address indexed token, address indexed owner);
+    event CampaignLocked(address indexed campaign, address indexed token, uint256 indexed collected);
+    event CampaignUnlocked(address indexed campaign, address indexed token);
+
     /**
      * @notice allows an participant to buy tokens (they can be claimed after the campaign succeeds)
      */

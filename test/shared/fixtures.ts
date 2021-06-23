@@ -3,7 +3,7 @@ import { waffle, ethers, upgrades } from 'hardhat'
 
 import { expandTo18Decimals, TOTAL_SUPPLY } from './utilities'
 
-import { DPexRouter, DPexRouterPairs, IWETH } from '@passive-income/dpex-peripheral/typechain'
+import { DPexRouter, DPexRouterPairs, IBEP20, IWETH } from '@passive-income/dpex-peripheral/typechain'
 import { DPexFactory } from '@passive-income/dpex-swap-core/typechain'
 import { PSI, PSIGovernance, FeeAggregator } from '@passive-income/psi-contracts/typechain'
 import { PSIPadCampaignFactory, PSIPadTokenDeployer, PSIPadTokenLockFactory, TestBEP20 }  from '../../typechain';
@@ -23,7 +23,7 @@ const overrides = {
 
 interface V2Fixture {
   psi: PSI
-  token: TestBEP20
+  token: IBEP20
   WETH: IWETH
   feeAggregator: FeeAggregator
   factory: DPexFactory

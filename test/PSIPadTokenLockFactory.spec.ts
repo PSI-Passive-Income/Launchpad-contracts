@@ -7,8 +7,8 @@ import { expandTo18Decimals, getApprovalDigest, mineBlock, MINIMUM_LIQUIDITY } f
 import { v2Fixture } from './shared/fixtures'
 
 import { IWETH } from '@passive-income/dpex-peripheral/typechain'
-import { PSI, FeeAggregator } from '@passive-income/psi-contracts/typechain'
-import { PSIPadTokenLockFactory, TestBEP20 }  from '../typechain'
+import { PSI, FeeAggregator, IBEP20 } from '@passive-income/psi-contracts/typechain'
+import { PSIPadTokenLockFactory }  from '../typechain'
 
 chai.use(waffle.solidity)
 
@@ -22,7 +22,7 @@ describe('PSIPadTokenLockFactory', () => {
   const loadFixture = createFixtureLoader([owner], provider)
 
   let psi: PSI
-  let token: TestBEP20
+  let token: IBEP20
   let WETH: IWETH
   let feeAggregator: FeeAggregator
   let tokenLockFactory: PSIPadTokenLockFactory

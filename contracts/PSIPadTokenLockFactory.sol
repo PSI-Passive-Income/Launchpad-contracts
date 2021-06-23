@@ -42,7 +42,7 @@ contract PSIPadTokenLockFactory is IPSIPadTokenLockFactory, Initializable, Ownab
     mapping(address => mapping(uint256 => bool)) public userTokensLocked;
 
     modifier isOwner(uint256 lockId) {
-        require(tokensLocked[lockId].owner != address(0), "Lock does not exist");
+        require(tokensLocked[lockId].owner != address(0), "PSIPadTokenLockFactory: LOCK_DOES_NOT_EXIST");
         require(
             tokensLocked[lockId].owner == msg.sender && userTokensLocked[msg.sender][lockId],
             "PSIPadTokenLockFactory: UNAUTHORIZED"

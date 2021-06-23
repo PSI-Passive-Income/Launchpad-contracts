@@ -8,7 +8,7 @@ import { v2Fixture } from './shared/fixtures'
 
 import { DPexRouter, DPexRouterPairs, IWETH } from '@passive-income/dpex-peripheral/typechain'
 import { DPexFactory } from '@passive-income/dpex-swap-core/typechain'
-import { PSI, PSIGovernance, FeeAggregator } from '@passive-income/psi-contracts/typechain'
+import { PSI, IBEP20, FeeAggregator } from '@passive-income/psi-contracts/typechain'
 import { PSIPadCampaignFactory, PSIPadTokenDeployer, TestBEP20 }  from '../typechain'
 
 chai.use(waffle.solidity)
@@ -23,7 +23,7 @@ describe('PSIPadCampaignFactory', () => {
   const loadFixture = createFixtureLoader([owner], provider)
 
   let psi: PSI
-  let token: TestBEP20
+  let token: IBEP20
   let WETH: IWETH
   let feeAggregator: FeeAggregator
   let factory: DPexFactory
@@ -70,14 +70,27 @@ describe('PSIPadCampaignFactory', () => {
     poolData.start_date = (await provider.getBlock(provider.blockNumber)).timestamp
     poolData.end_date = poolData.start_date + 60 // 1 minute
     
-    expect(await campaignFactory.tokensNeeded(poolData, 0)).to.eq(expandTo18Decimals(2900));
+    expect(await campaignFactory.tokensNeeded(poolData, 0)).to.eq(expandTo18Decimals(2900))
   })
 
   it('Create campaign', async () => {
     poolData.start_date = (await provider.getBlock(provider.blockNumber)).timestamp
     poolData.end_date = poolData.start_date + 60 // 1 minute
     
-    await campaignFactory.createCampaign(poolData, token.address, 0);
+    // await expect(campaignFactory.createCampaign(poolData, token.address, 0)).to.reverted
+
+    const tokensNeeded = await campaignFactory.tokensNeeded(poolData, 0)
+    await token.approve(campaignFactory.address, tokensNeeded)
+    await expect(campaignFactory.createCampaign(poolData, token.address, 0))
+      .to.emit(campaignFactory, 'CampaignAdded')
+      .withArgs("0x282762CaC7c21081b03562E123e8b703155F9F2c", token.address, owner.address)
+
+    const userCampaigns = await campaignFactory.getUserCampaigns(owner.address)
+    expect(userCampaigns.length).to.eq(1)
+    expect(userCampaigns[0]).to.eq(0)
+
+    const campaign = await campaignFactory.campaigns(0)
+    expect(await token.balanceOf(campaign)).to.eq(tokensNeeded)
   })
 
   // it('addLiquidity', async () => {

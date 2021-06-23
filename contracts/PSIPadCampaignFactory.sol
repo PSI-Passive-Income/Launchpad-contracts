@@ -10,7 +10,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import './PSIPadCampaign.sol';
-import "./interfaces/IPSIPadCampaign.sol";
 import './interfaces/IPSIPadCampaignFactory.sol';
 
 contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, OwnableUpgradeable {
@@ -26,7 +25,21 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
     uint256 public override stable_coin_fee; // out of 10000
     uint256 public override token_fee; // out of 10000
     
+    /**
+     * @notice all campaigns
+     */
     address[] public campaigns;
+
+    /**
+     * @notice campaign ID's for a user
+     */
+    mapping(address => uint256[]) public userCampaigns;
+
+    modifier isOwner(uint256 campaignId) {
+        require(campaigns[campaignId] != address(0), "PSIPadCampaignFactory: CAMPAIGN_DOES_NOT_EXIST");
+        require(PSIPadCampaign(campaigns[campaignId]).owner() == msg.sender, "PSIPadCampaignFactory: UNAUTHORIZED");
+        _;
+    }
 
     function initialize(
         address _default_factory,
@@ -64,6 +77,10 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         token_fee = _token_fee;
     }
 
+    function getUserCampaigns(address user) external override view returns(uint256[] memory) {
+        return userCampaigns[user];
+    }
+
     /**
      * @notice Start a new campaign using
      * @dev 1 ETH = 1 XYZ (_pool_rate = 1e18) <=> 1 ETH = 10 XYZ (_pool_rate = 1e19) <=> XYZ (decimals = 18)
@@ -97,6 +114,8 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         );
 
         campaigns.push(campaign_address);
+        userCampaigns[msg.sender].push(campaigns.length -1);
+
         transferToCampaign(
             _data,
             _token,
@@ -108,6 +127,8 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
             IERC20Upgradeable(_token).balanceOf(campaign_address) >= tokensNeeded(_data, _tokenFeePercentage), 
             "PSIPadLockFactory: CAMPAIGN_TOKEN_AMOUNT_TO_LOW"
         );
+
+        emit CampaignAdded(campaign_address, _token, msg.sender);
         
         return campaign_address;
     }
@@ -126,10 +147,13 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         IERC20Upgradeable(_token).safeTransferFrom(msg.sender, _campaign_address, tokenAmount);
     }
 
+    /**
+     * @notice calculates how many tokens are needed to start an campaign
+     */
     function tokensNeeded(
         IPSIPadCampaign.CampaignData calldata _data,
         uint256 _tokenFeePercentage
-    ) public override view returns (uint256 _tokensNeeded) {
+    ) public override pure returns (uint256 _tokensNeeded) {
         _tokensNeeded = 
             (_data.hardCap.mul(_data.rate).div(1e18)).add(
                 (_data.hardCap.mul(_data.liquidity_rate))
@@ -137,5 +161,23 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
 
         // add the token fee percentage if there is any
         _tokensNeeded += (_tokensNeeded.mul(_tokenFeePercentage)).div(1e5);
+    }
+
+    /**
+     * @notice Add liqudity to an exchange and burn the remaining tokens, 
+     * can only be executed when the campaign completes
+     */
+    function lock(uint256 campaignId) external override isOwner(campaignId) {
+        address campaign = campaigns[campaignId];
+        PSIPadCampaign(campaign).lock();
+        emit CampaignLocked(campaign, PSIPadCampaign(campaign).token(), PSIPadCampaign(campaign).collected());
+    }
+    /**
+     * @notice allows the owner to unlock the LP tokens and any leftover tokens after the lock has ended
+     */
+    function unlock(uint256 campaignId) external override isOwner(campaignId) {
+        address campaign = campaigns[campaignId];
+        PSIPadCampaign(campaign).unlock();
+        emit CampaignUnlocked(campaign, PSIPadCampaign(campaign).token());
     }
 }

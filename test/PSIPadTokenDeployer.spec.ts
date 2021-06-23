@@ -8,7 +8,7 @@ import { v2Fixture } from './shared/fixtures'
 
 import { DPexRouter, DPexRouterPairs, IWETH } from '@passive-income/dpex-peripheral/typechain'
 import { DPexFactory } from '@passive-income/dpex-swap-core/typechain'
-import { PSI, PSIGovernance, FeeAggregator } from '@passive-income/psi-contracts/typechain'
+import { PSI, IBEP20 } from '@passive-income/psi-contracts/typechain'
 import { PSIPadCampaignFactory, PSIPadTokenDeployer, TestBEP20 }  from '../typechain'
 
 chai.use(waffle.solidity)
@@ -23,7 +23,7 @@ describe('PSITokenDeployer', () => {
   const loadFixture = createFixtureLoader([owner], provider)
 
   let psi: PSI
-  let token: TestBEP20
+  let token: IBEP20
   let WETH: IWETH
   let factory: DPexFactory
   let router: DPexRouter

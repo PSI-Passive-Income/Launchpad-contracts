@@ -46,6 +46,11 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
     constructor() {
         psipad_factory = msg.sender;
     }
+
+    modifier onlyPSIPadFactory() {
+        require(msg.sender == psipad_factory, 'PSIPadCampaign: UNAUTHORIZED');
+        _;
+    }
     
     /**
      * @notice Initialize a new campaign (can only be triggered by the factory contract)
@@ -109,7 +114,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * @notice Add liqudity to an exchange and burn the remaining tokens, 
      * can only be executed when the campaign completes
      */
-    function lock() external override {
+    function lock() external override onlyPSIPadFactory {
         require(locked == 0, 'PSIPadCampaign: LIQUIDITY_ALREADY_LOCKED');
         require(!isLive(), 'PSIPadCampaign: PRESALE_STILL_LIVE');
         require(!failed(), "PSIPadCampaign: PRESALE_FAILED");
@@ -182,7 +187,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
     /**
      * @notice allows the owner to unlock the LP tokens and any leftover tokens after the lock has ended
      */
-    function unlock() external override onlyOwner {
+    function unlock() external override onlyPSIPadFactory {
         require(locked == 1 || failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
         require(block.timestamp >= unlock_date, "PSIPadCampaign: TOKENS_ARE_LOCKED");
         IBEP20(lp_address).transfer(msg.sender, IBEP20(lp_address).balanceOf(address(this)));
