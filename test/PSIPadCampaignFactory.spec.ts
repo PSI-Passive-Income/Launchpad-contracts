@@ -25,6 +25,7 @@ describe('PSIPadCampaignFactory', () => {
   let psi: PSI
   let token: TestBEP20
   let WETH: IWETH
+  let feeAggregator: FeeAggregator
   let factory: DPexFactory
   let router: DPexRouter
   let campaignFactory: PSIPadCampaignFactory
@@ -34,11 +35,25 @@ describe('PSIPadCampaignFactory', () => {
     psi = fixture.psi
     token = fixture.token
     WETH = fixture.WETH
+    feeAggregator = fixture.feeAggregator
     factory = fixture.factory
     router = fixture.router
     campaignFactory = fixture.campaignFactory
     tokenDeployer = fixture.tokenDeployer
   })
+
+  const poolData = {
+    softCap: expandTo18Decimals(10), // 10 bnb
+    hardCap: expandTo18Decimals(20), // 20 bnb
+    start_date: 0,
+    end_date: 0,
+    rate: expandTo18Decimals(100), // 1 bnb = 100 tokens
+    min_allowed: expandTo18Decimals(0.1), // 0.1 bnb
+    max_allowed: expandTo18Decimals(2), // 2 bnb
+    pool_rate: expandTo18Decimals(60), // 1 bnb = 60 tokens (could differ from sell rate)
+    lock_duration: 60, // 1 minute
+    liquidity_rate: 7500 // 75%
+  }
 
   // afterEach(async function() {
   //   expect(await provider.getBalance(router.address)).to.eq(constants.Zero)
@@ -47,22 +62,22 @@ describe('PSIPadCampaignFactory', () => {
   it('Default factory and router', async () => {
     expect(await campaignFactory.default_factory()).to.eq(factory.address)
     expect(await campaignFactory.default_router()).to.eq(router.address)
+    expect(await campaignFactory.fee_aggregator()).to.eq(feeAggregator.address)
+    expect(await campaignFactory.stable_coin()).to.eq(WETH.address)
   })
 
-  it('Default factory and router', async () => {
-    // _softCap,_hardCap,_start_date, _end_date,_rate,_min_allowed,_max_allowed
-    const startTime = (await provider.getBlock(provider.blockNumber)).timestamp
-    const endTime = startTime + 1000
-    const data: BigNumberish[] = [
-      expandTo18Decimals(10), // 10 bnb
-      expandTo18Decimals(20), // 20 bnb
-      startTime,
-      endTime,
-      100, // 1 bnb = 100 tokens
-      
-    ]
-    expect(await campaignFactory.createCampaign()).to.eq(factory.address)
-    expect(await campaignFactory.default_router()).to.eq(router.address)
+  it('Tokens needed', async () => {
+    poolData.start_date = (await provider.getBlock(provider.blockNumber)).timestamp
+    poolData.end_date = poolData.start_date + 60 // 1 minute
+    
+    expect(await campaignFactory.tokensNeeded(poolData, 0)).to.eq(expandTo18Decimals(2900));
+  })
+
+  it('Create campaign', async () => {
+    poolData.start_date = (await provider.getBlock(provider.blockNumber)).timestamp
+    poolData.end_date = poolData.start_date + 60 // 1 minute
+    
+    await campaignFactory.createCampaign(poolData, token.address, 0);
   })
 
   // it('addLiquidity', async () => {

@@ -22,17 +22,27 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
     address public override default_router;
     address public override fee_aggregator;
 
-    address override public stable_coin = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; // default WETH
-    uint256 override public stable_coin_fee = 100; // out of 10000, default 1%
-    uint256 override public token_fee = 50; // out of 10000, default 0.5%
+    address public override stable_coin; // WETH or WBNB
+    uint256 public override stable_coin_fee; // out of 10000
+    uint256 public override token_fee; // out of 10000
     
     address[] public campaigns;
 
-    function initialize(address _default_factory, address _default_router, address _stable_coin) external initializer {
+    function initialize(
+        address _default_factory,
+        address _default_router,
+        address _fee_aggregator,
+        address _stable_coin,
+        uint256 _stable_coin_fee,
+        uint256 _token_fee
+    ) external initializer {
         super.__Ownable_init();
         default_factory = _default_factory;
         default_router = _default_router;
+        fee_aggregator = _fee_aggregator;
         stable_coin = _stable_coin;
+        stable_coin_fee = _stable_coin_fee;
+        token_fee = _token_fee;
     }
 
     function setDefaultFactory(address _default_factory) external override onlyOwner {
@@ -57,22 +67,18 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
     /**
      * @notice Start a new campaign using
      * @dev 1 ETH = 1 XYZ (_pool_rate = 1e18) <=> 1 ETH = 10 XYZ (_pool_rate = 1e19) <=> XYZ (decimals = 18)
-     * _data = _softCap, _hardCap, _start_date, _end_date, _rate, _min_allowed, _max_allowed
      */
     function createCampaign(
-        uint256[] memory _data,
+        IPSIPadCampaign.CampaignData calldata _data,
         address _token,
-        uint256 _pool_rate,
-        uint256 _lock_duration,
-        uint256 _liquidity_rate,
         uint256 _tokenFeePercentage
     ) external override returns (address campaign_address) {
-        require(_data[0] < _data[1], "PSIPadLockFactory: SOFTCAP_HIGHER_THEN_LOWCAP" );
-        require(_data[2] < _data[3], "PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE" );
-        require(block.timestamp < _data[3], "PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE");
-        require(_data[5] < _data[1], "PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP" );
-        require(_data[4] != 0, "PSIPadLockFactory: RATE_IS_ZERO");
-        require(_liquidity_rate >= 0 && _liquidity_rate <= 1000);
+        require(_data.softCap < _data.hardCap, "PSIPadLockFactory: SOFTCAP_HIGHER_THEN_LOWCAP" );
+        require(_data.start_date < _data.end_date, "PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE" );
+        require(block.timestamp < _data.end_date, "PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE");
+        require(_data.min_allowed < _data.hardCap, "PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP" );
+        require(_data.rate != 0, "PSIPadLockFactory: RATE_IS_ZERO");
+        require(_data.liquidity_rate >= 0 && _data.liquidity_rate <= 10000);
         
         bytes memory bytecode = type(PSIPadCampaign).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(_token, msg.sender));
@@ -84,9 +90,6 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
             _data,
             _token,
             msg.sender,
-            _pool_rate,
-            _lock_duration,
-            _liquidity_rate,
             default_factory,
             default_router,
             stable_coin_fee,
@@ -95,58 +98,43 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
 
         campaigns.push(campaign_address);
         transferToCampaign(
-            _data[1],
-            _data[4],
-            _pool_rate,
+            _data,
             _token,
             campaign_address,
-            _liquidity_rate,
             _tokenFeePercentage
         );
 
         require(
-            IERC20Upgradeable(_token).balanceOf(address(campaign_address)) >= 
-                tokensNeeded(_data, _pool_rate, _liquidity_rate, _tokenFeePercentage), 
+            IERC20Upgradeable(_token).balanceOf(campaign_address) >= tokensNeeded(_data, _tokenFeePercentage), 
             "PSIPadLockFactory: CAMPAIGN_TOKEN_AMOUNT_TO_LOW"
         );
         
         return campaign_address;
     }
     function transferToCampaign(
-        uint256 _hardCap,
-        uint256 _rate,
-        uint256 _pool_rate,
+        IPSIPadCampaign.CampaignData calldata _data,
         address _token,
         address _campaign_address,
-        uint256 _liquidity_rate,
         uint256 _tokenFeePercentage
     ) internal {
         uint256 tokenAmount = 
-            (_hardCap.mul(_rate).div(1e18)).add(
-                (_hardCap.mul(_liquidity_rate))
-                    .mul(_pool_rate).div(1e21)); // pool rate 1000 x 1e18
+            (_data.hardCap.mul(_data.rate).div(1e18)).add(
+                (_data.hardCap.mul(_data.liquidity_rate))
+                    .mul(_data.pool_rate).div(1e22)); // pool rate 10000 x 1e18
 
         tokenAmount += (tokenAmount.mul(_tokenFeePercentage)).div(1e5);
-        IERC20Upgradeable(_token).safeTransferFrom(
-            msg.sender,
-            address(_campaign_address),
-            tokenAmount
-        );
+        IERC20Upgradeable(_token).safeTransferFrom(msg.sender, _campaign_address, tokenAmount);
     }
 
     function tokensNeeded(
-        uint256[] memory _data,
-        uint256 _pool_rate,
-        uint256 _liquidity_rate,
+        IPSIPadCampaign.CampaignData calldata _data,
         uint256 _tokenFeePercentage
     ) public override view returns (uint256 _tokensNeeded) {
         _tokensNeeded = 
-            (_data[1].mul(_data[4]).div(1e18)).add(
-                (_data[1].mul(_liquidity_rate))
-                    .mul(_pool_rate).div(1e22)); // pool rate 10000 x 1e18
+            (_data.hardCap.mul(_data.rate).div(1e18)).add(
+                (_data.hardCap.mul(_data.liquidity_rate))
+                    .mul(_data.pool_rate).div(1e22)); // pool rate 10000 x 1e18
 
-        // add the psi token fee
-        _tokensNeeded += (_tokensNeeded.mul(token_fee)).div(1e5);
         // add the token fee percentage if there is any
         _tokensNeeded += (_tokensNeeded.mul(_tokenFeePercentage)).div(1e5);
     }

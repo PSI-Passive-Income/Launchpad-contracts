@@ -15,14 +15,11 @@ contract PSIPadTokenDeployer is Initializable {
     }
 
     function createTokenWithCampaign(
-        string memory _name,
-        string memory _symbol,
+        string calldata _name,
+        string calldata _symbol,
         uint8 _decimals,
         uint256 _totalSupply,
-        uint256[] memory _data,
-        uint256 _pool_rate,
-        uint256 _lock_duration,
-        uint256 _liquidity_rate
+        IPSIPadCampaign.CampaignData calldata _data
     ) public returns(address token_address) {
         bytes memory bytecode = type(PSIPadTokenModel).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(_name, msg.sender));
@@ -37,9 +34,6 @@ contract PSIPadTokenDeployer is Initializable {
         IPSIPadCampaignFactory(campaignFactory).createCampaign(
             _data,
             token_address,
-            _pool_rate,
-            _lock_duration,
-            _liquidity_rate,
             0
         );
         IERC20Upgradeable(token_address).transfer(

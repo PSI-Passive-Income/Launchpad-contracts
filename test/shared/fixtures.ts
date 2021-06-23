@@ -6,7 +6,7 @@ import { expandTo18Decimals, TOTAL_SUPPLY } from './utilities'
 import { DPexRouter, DPexRouterPairs, IWETH } from '@passive-income/dpex-peripheral/typechain'
 import { DPexFactory } from '@passive-income/dpex-swap-core/typechain'
 import { PSI, PSIGovernance, FeeAggregator } from '@passive-income/psi-contracts/typechain'
-import { PSIPadCampaignFactory, PSIPadTokenDeployer, TestBEP20 }  from '../../typechain';
+import { PSIPadCampaignFactory, PSIPadTokenDeployer, PSIPadTokenLockFactory, TestBEP20 }  from '../../typechain';
 
 import TestBEP20Abi from '../../artifacts/contracts/test/TestBEP20.sol/TestBEP20.json'
 import WBNBAbi from '@passive-income/dpex-peripheral/artifacts/contracts/test/WBNB.sol/WBNB.json'
@@ -25,10 +25,12 @@ interface V2Fixture {
   psi: PSI
   token: TestBEP20
   WETH: IWETH
+  feeAggregator: FeeAggregator
   factory: DPexFactory
   router: DPexRouter
   campaignFactory: PSIPadCampaignFactory
   tokenDeployer: PSIPadTokenDeployer
+  tokenLockFactory: PSIPadTokenLockFactory
 }
 
 export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Provider): Promise<V2Fixture> {
@@ -58,19 +60,25 @@ export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Prov
 
   // deploy PSIPadCampaignFactory
   const PSIPadCampaignFactory = await ethers.getContractFactory("PSIPadCampaignFactory");
-  const campaignFactory =  await upgrades.deployProxy(PSIPadCampaignFactory, [factory.address, router.address], {initializer: 'initialize'}) as unknown as PSIPadCampaignFactory;
+  const campaignFactory =  await upgrades.deployProxy(PSIPadCampaignFactory, [factory.address, router.address, feeAggregator.address, WETH.address, 100, 50], {initializer: 'initialize'}) as unknown as PSIPadCampaignFactory;
 
   // deploy PSIPadTokenDeployer
   const PSIPadTokenDeployer = await ethers.getContractFactory("PSIPadTokenDeployer");
   const tokenDeployer =  await upgrades.deployProxy(PSIPadTokenDeployer, [campaignFactory.address], {initializer: 'initialize'}) as unknown as PSIPadTokenDeployer;
 
+  // deploy PSIPadTokenLockFactory
+  const PSIPadTokenLockFactory = await ethers.getContractFactory("PSIPadTokenLockFactory");
+  const tokenLockFactory =  await upgrades.deployProxy(PSIPadTokenLockFactory, [feeAggregator.address, WETH.address, 100, 50], {initializer: 'initialize'}) as unknown as PSIPadTokenLockFactory;
+
   return {
     psi,
     token,
     WETH,
+    feeAggregator,
     factory,
     router,
     campaignFactory,
-    tokenDeployer
+    tokenDeployer,
+    tokenLockFactory
   }
 }
