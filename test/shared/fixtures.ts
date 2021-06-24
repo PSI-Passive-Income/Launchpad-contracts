@@ -3,18 +3,20 @@ import { waffle, ethers, upgrades } from 'hardhat'
 
 import { expandTo18Decimals, TOTAL_SUPPLY } from './utilities'
 
-import { DPexRouter, DPexRouterPairs, IBEP20, IWETH } from '@passive-income/dpex-peripheral/typechain'
-import { DPexFactory } from '@passive-income/dpex-swap-core/typechain'
+import { DPexRouter, DPexRouterPairs, DPexWETHWrapper, IBEP20, IWETH } from '@passive-income/dpex-peripheral/typechain'
+import { DPexFactory, DPexPairInitHash } from '@passive-income/dpex-swap-core/typechain'
 import { PSI, PSIGovernance, FeeAggregator } from '@passive-income/psi-contracts/typechain'
 import { PSIPadCampaignFactory, PSIPadTokenDeployer, PSIPadTokenLockFactory, TestBEP20 }  from '../../typechain';
 
 import TestBEP20Abi from '../../artifacts/contracts/test/TestBEP20.sol/TestBEP20.json'
 import WBNBAbi from '@passive-income/dpex-peripheral/artifacts/contracts/test/WBNB.sol/WBNB.json'
+import DPexPairInitHashAbi from '@passive-income/dpex-swap-core/artifacts/contracts/DPexPairInitHash.sol/DPexPairInitHash.json'
 import DPexFactoryAbi from '@passive-income/dpex-swap-core/artifacts/contracts/DPexFactory.sol/DPexFactory.json'
 import PSIGovernanceAbi from '@passive-income/psi-contracts/artifacts/contracts/PSIGovernance.sol/PSIGovernance.json'
 import FeeAggregatorAbi from '@passive-income/psi-contracts/artifacts/contracts/FeeAggregator.sol/FeeAggregator.json'
 import DPexRouterPairsAbi from '@passive-income/dpex-peripheral/artifacts/contracts/DPexRouterPairs.sol/DPexRouterPairs.json'
 import DPexRouterAbi from '@passive-income/dpex-peripheral/artifacts/contracts/DPexRouter.sol/DPexRouter.json'
+import DPexWETHWrapperAbi from '@passive-income/dpex-peripheral/artifacts/contracts/DPexWETHWrapper.sol/DPexWETHWrapper.json'
 import PSIAbi from '@passive-income/psi-contracts/artifacts/contracts/PSI.sol/PSI.json'
 
 const overrides = {
@@ -49,26 +51,36 @@ export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Prov
   // deploy fee aggregator
   const feeAggregator = await waffle.deployContract(wallet, FeeAggregatorAbi, [], overrides) as unknown as FeeAggregator
   await feeAggregator.initialize(governance.address, WETH.address, psi.address)
+  await feeAggregator.addFeeToken(WETH.address)
+
+  // init hash
+  const initHash = await waffle.deployContract(wallet, DPexPairInitHashAbi, [], overrides) as unknown as DPexPairInitHash
+  const hash = await initHash.get()
 
   // deploy router
   const routerPairs = await waffle.deployContract(wallet, DPexRouterPairsAbi, [], overrides) as unknown as DPexRouterPairs
   await routerPairs.initialize(feeAggregator.address, governance.address)
-  await routerPairs.setFactory(factory.address, "0x8ce3d8395a2762e69b9d143e8364b606484fca5a5826adb06d61642abebe6a0f")
+  await routerPairs.setFactory(factory.address, hash)//"0x8ce3d8395a2762e69b9d143e8364b606484fca5a5826adb06d61642abebe6a0f")
   const router = await waffle.deployContract(wallet, DPexRouterAbi, [], overrides) as unknown as DPexRouter
-  await router.initialize(factory.address, routerPairs.address, WETH.address, feeAggregator.address, governance.address);
-  await governance.setRouter(router.address, overrides);
+  await router.initialize(factory.address, routerPairs.address, WETH.address, feeAggregator.address, governance.address)
+  await governance.setRouter(router.address, overrides)
+
+  // weth wrapper
+  const WETHWrapper = await waffle.deployContract(wallet, DPexWETHWrapperAbi, [router.address, WETH.address, governance.address], overrides) as DPexWETHWrapper
+  await router.setWETHWrapper(WETHWrapper.address)
 
   // deploy PSIPadCampaignFactory
-  const PSIPadCampaignFactory = await ethers.getContractFactory("PSIPadCampaignFactory");
-  const campaignFactory =  await upgrades.deployProxy(PSIPadCampaignFactory, [factory.address, router.address, feeAggregator.address, WETH.address, 100, 50], {initializer: 'initialize'}) as unknown as PSIPadCampaignFactory;
+  const PSIPadCampaignFactory = await ethers.getContractFactory("PSIPadCampaignFactory")
+  const campaignFactory =  await upgrades.deployProxy(PSIPadCampaignFactory, [factory.address, router.address, feeAggregator.address, WETH.address, 100, 50], {initializer: 'initialize'}) as unknown as PSIPadCampaignFactory
+  await governance.setGovernanceLevel(campaignFactory.address, 50)
 
   // deploy PSIPadTokenDeployer
   const PSIPadTokenDeployer = await ethers.getContractFactory("PSIPadTokenDeployer");
-  const tokenDeployer =  await upgrades.deployProxy(PSIPadTokenDeployer, [campaignFactory.address], {initializer: 'initialize'}) as unknown as PSIPadTokenDeployer;
+  const tokenDeployer =  await upgrades.deployProxy(PSIPadTokenDeployer, [campaignFactory.address], {initializer: 'initialize'}) as unknown as PSIPadTokenDeployer
 
   // deploy PSIPadTokenLockFactory
   const PSIPadTokenLockFactory = await ethers.getContractFactory("PSIPadTokenLockFactory");
-  const tokenLockFactory =  await upgrades.deployProxy(PSIPadTokenLockFactory, [feeAggregator.address, WETH.address, 100, 50], {initializer: 'initialize'}) as unknown as PSIPadTokenLockFactory;
+  const tokenLockFactory =  await upgrades.deployProxy(PSIPadTokenLockFactory, [feeAggregator.address, WETH.address, 100, 50], {initializer: 'initialize'}) as unknown as PSIPadTokenLockFactory
 
   return {
     psi,

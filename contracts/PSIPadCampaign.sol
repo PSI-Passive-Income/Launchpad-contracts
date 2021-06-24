@@ -31,14 +31,15 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
 
     address override public factory_address;
     address override public router_address;
-    uint256 override public stable_coin_fee = 100; // out of 10000, default 1%
-    uint256 override public token_fee = 50; // out of 10000, default 0.5%
+    uint256 override public stable_coin_fee;
+    uint256 override public campaignTokens;
+    uint256 override public feeTokens;
 
     address override public lp_address;
-    uint256 override public locked = 0;
     uint256 override public unlock_date = 0;
 
     bool override public finalized = false;
+    bool override public locked = false;
     bool override public doRefund = false;
 
     mapping(address => uint) private participants;
@@ -62,7 +63,8 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         address _factory_address,
         address _router_address,
         uint256 _stable_coin_fee,
-        uint256 _token_fee
+        uint256 _campaignTokens,
+        uint256 _feeTokens
     ) external initializer {
         require(msg.sender == psipad_factory, 'PSIPadCampaign: UNAUTHORIZED');
 
@@ -75,7 +77,10 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         factory_address = _factory_address;
         router_address = _router_address;
         stable_coin_fee = _stable_coin_fee;
-        token_fee = _token_fee;
+        campaignTokens = _campaignTokens;
+        feeTokens = _feeTokens;
+
+        emit Initialized(_owner);
     }
 
     /**
@@ -92,22 +97,15 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         require(isLive(), 'PSIPadCampaign: CAMPAIGN_NOT_LIVE');
         require(msg.value >= data.min_allowed, 'PSIPadCampaign: BELOW_MIN_AMOUNT');
         require(getGivenAmount(msg.sender).add(msg.value) <= data.max_allowed, 'PSIPadCampaign: ABOVE_MAX_AMOUNT');
-        require((msg.value <= getRemaining()), 'PSIPadCampaign: CONTRACT_INSUFFICIENT_FUNDS');
+        require((msg.value <= getRemaining()), 'PSIPadCampaign: CONTRACT_INSUFFICIENT_TOKENS');
 
-        participants[msg.sender] = participants[msg.sender].add(msg.value);
         collected = (collected).add(msg.value);
 
-        if(collected >= data.hardCap) {
-            finalized = true;
-        }
-    }
-    /**
-     * @notice Emergency finalize the campaign when not triggered on buy. 
-     * (only possible when minimum deposit is not possible anymore)
-     */
-    function emergencyFinalize() external override onlyOwner {
-        require((data.hardCap - collected) < data.min_allowed, "PSIPadCampaign: MIN_DEPOSIT_STILL_AVAILABLE");
-        finalized = true;
+        // finalize the campaign when hardcap is reached or minimum deposit is not possible anymore
+        if(collected >= data.hardCap || (data.hardCap - collected) < data.min_allowed) finalized = true;
+        participants[msg.sender] = participants[msg.sender].add(msg.value);
+
+        emit TokensBought(msg.sender, msg.value);
     }
 
     /**
@@ -115,48 +113,48 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * can only be executed when the campaign completes
      */
     function lock() external override onlyPSIPadFactory {
-        require(locked == 0, 'PSIPadCampaign: LIQUIDITY_ALREADY_LOCKED');
-        require(!isLive(), 'PSIPadCampaign: PRESALE_STILL_LIVE');
-        require(!failed(), "PSIPadCampaign: PRESALE_FAILED");
-        require(data.softCap <= collected, "PSIPadCampaign: SOFT_CAP_NOT_REACHED");
-        require(finalized, "PSIPadCampaign: NOT_FINALIZED");
+        require(!locked, 'PSIPadCampaign: LIQUIDITY_ALREADY_LOCKED');
+        require(block.timestamp >= data.start_date, 'PSIPadCampaign: CAMPAIGN_NOT_STARTED');
+        require(!isLive(), 'PSIPadCampaign: CAMPAIGN_STILL_LIVE');
+        require(!failed(), "PSIPadCampaign: CAMPAIGN_FAILED");
 
-        transferFees();
-        addLiquidity();
-        locked = 1;
+        uint256 stableFee = transferFees();
+        addLiquidity(stableFee);
+
+        locked = true;
         unlock_date = (block.timestamp).add(data.lock_duration);
     }
-    function transferFees() internal {
+    function transferFees() internal returns (uint256 stableFee) {
         address fee_aggregator = IPSIPadCampaignFactory(psipad_factory).fee_aggregator();
 
-        if (token_fee > 0) {
+        if (feeTokens > 0) {
             uint256 collectedPercentage = (collected.mul(1e18)).div(data.hardCap);
-            uint256 tokensToSend = IERC20Upgradeable(token).balanceOf(address(this));
-            tokensToSend = (collectedPercentage.mul(tokensToSend)).div(1e18);
-            tokensToSend = (tokensToSend.mul(token_fee)).div(1e5);
+            uint256 tokenFee = (feeTokens.mul(collectedPercentage)).div(1e18);
 
-            IBEP20(token).transfer(fee_aggregator, tokensToSend);
-            IFeeAggregator(fee_aggregator).addFeeToken(token);
-            IFeeAggregator(fee_aggregator).addTokenFee(token, tokensToSend);
+            IBEP20(token).transfer(fee_aggregator, tokenFee);
+            IFeeAggregator(fee_aggregator).addTokenFee(token, tokenFee);
         }
 
         if (stable_coin_fee > 0) {
-            uint256 stableToSend = (collected.mul(stable_coin_fee)).div(1e5);
+            stableFee = (collected.mul(stable_coin_fee)).div(1e4);
             address stable_coin = IPSIPadCampaignFactory(psipad_factory).stable_coin();
-            IWETH(stable_coin).deposit{ value: stableToSend }();
-            IWETH(stable_coin).transfer(fee_aggregator, stableToSend);
-            IFeeAggregator(fee_aggregator).addTokenFee(stable_coin, stableToSend);
+            IWETH(stable_coin).deposit{ value: stableFee }();
+            IWETH(stable_coin).transfer(fee_aggregator, stableFee);
+            IFeeAggregator(fee_aggregator).addTokenFee(stable_coin, stableFee);
         }
     }
-    function addLiquidity() internal {
+    function addLiquidity(uint256 stableFee) internal {
         if (IPSIPadFactory(factory_address)
             .getPair(token, IPSIPadCampaignFactory(psipad_factory).stable_coin()) == address(0)) {
-            if (data.liquidity_rate > 0) {
-                uint256 tokenLiquidity = 
-                    ((collected.mul(data.liquidity_rate).div(10000)).mul(data.pool_rate)).div(1e18);
-                    
+            
+            uint256 finalCollected = collected;
+            if (data.liquidity_rate + stable_coin_fee > 10000) finalCollected -= stableFee;
+            uint256 stableLiquidity = finalCollected.mul(data.liquidity_rate).div(10000);
+
+            if (stableLiquidity > 0) {
+                uint256 tokenLiquidity = (stableLiquidity.mul(data.pool_rate)).div(1e18);
                 IBEP20(token).approve(router_address, tokenLiquidity);
-                IPSIPadRouter(router_address).addLiquidityETH{value : collected.mul(data.liquidity_rate).div(10000)} (
+                IPSIPadRouter(router_address).addLiquidityETH{value : stableLiquidity} (
                     address(token),
                     tokenLiquidity,
                     0,
@@ -170,8 +168,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
                 require(lp_address != address(0), "PSIPadCampaign: lp address not set");
             }
 
-            payable(owner()).transfer(collected.sub(collected.mul(data.liquidity_rate).div(10000)));
-
+            payable(owner()).transfer(collected.sub(stableFee).sub(stableLiquidity));
         } else {
             doRefund = true;
         }
@@ -180,7 +177,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * @notice Emergency set lp address when funds are f.e. moved. (only possible when tokens are unlocked)
      */
     function setLPAddress(address _lp_address) external override onlyOwner {
-        require(locked == 1 || failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
+        require(locked || failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
         require(block.timestamp >= unlock_date, "PSIPadCampaign: TOKENS_ARE_LOCKED");
         lp_address = _lp_address;
     }
@@ -188,7 +185,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * @notice allows the owner to unlock the LP tokens and any leftover tokens after the lock has ended
      */
     function unlock() external override onlyPSIPadFactory {
-        require(locked == 1 || failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
+        require(locked || failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
         require(block.timestamp >= unlock_date, "PSIPadCampaign: TOKENS_ARE_LOCKED");
         IBEP20(lp_address).transfer(msg.sender, IBEP20(lp_address).balanceOf(address(this)));
         IBEP20(token).transfer(msg.sender, IBEP20(token).balanceOf(address(this)));
@@ -198,7 +195,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * @notice Allow participants to withdraw tokens when campaign succeeds
      */
     function withdrawTokens() external override returns (uint256){
-        require(locked == 1, 'PSIPadCampaign: LIQUIDITY_NOT_ADDED');
+        require(locked, 'PSIPadCampaign: LIQUIDITY_NOT_ADDED');
         uint256 amount = calculateAmount(participants[msg.sender]);
         require(IBEP20(address(token)).transfer(msg.sender, amount),"can't transfer");
         participants[msg.sender] = 0;
@@ -218,10 +215,10 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
     /**
      * @notice Check whether the campaign is still live
      */
-    function isLive() public override view returns(bool){
-        if((block.timestamp < data.start_date)) return false;
-        if((block.timestamp >= data.end_date)) return false;
-        if((collected >= data.hardCap)) return false;
+    function isLive() public override view returns(bool) {
+        if ((block.timestamp < data.start_date)) return false;
+        if ((block.timestamp >= data.end_date)) return false;
+        if (finalized) return false;
         return true;
     }
     /**

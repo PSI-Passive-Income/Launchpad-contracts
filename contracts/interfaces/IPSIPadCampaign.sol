@@ -25,28 +25,25 @@ interface IPSIPadCampaign {
     function factory_address() external view returns(address);
     function router_address() external view returns(address);
     function stable_coin_fee() external view returns(uint256);
-    function token_fee() external view returns(uint256);
+    function campaignTokens() external view returns(uint256);
+    function feeTokens() external view returns(uint256);
 
     function lp_address() external view returns(address);
-    function locked() external view returns(uint256);
     function unlock_date() external view returns(uint256);
 
     function finalized() external view returns(bool);
+    function locked() external view returns(bool);
     function doRefund() external view returns(bool);
 
-    event Initialized(address indexed campaign, address indexed token, address indexed owner);
-    event CampaignLocked(address indexed campaign, address indexed token, uint256 indexed collected);
-    event CampaignUnlocked(address indexed campaign, address indexed token);
+    event Initialized(address indexed owner);
+    event TokensBought(address indexed user, uint256 value);
+    event CampaignLocked(uint256 collected);
+    event CampaignUnlocked();
 
     /**
      * @notice allows an participant to buy tokens (they can be claimed after the campaign succeeds)
      */
     function buyTokens() external payable;
-    /**
-     * @notice Emergency finalize the campaign when not triggered on buy. 
-     * (only possible when minimum deposit is not possible anymore)
-     */
-    function emergencyFinalize() external;
 
     /**
      * @notice Add liqudity to an exchange and burn the remaining tokens, 

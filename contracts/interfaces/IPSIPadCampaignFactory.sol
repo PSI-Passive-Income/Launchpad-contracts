@@ -42,7 +42,7 @@ interface IPSIPadCampaignFactory {
     function tokensNeeded(
         IPSIPadCampaign.CampaignData calldata _data,
         uint256 _tokenFeePercentage
-    ) external pure returns (uint256 _tokensNeeded);
+    ) external view returns (uint256 _tokensNeeded);
 
     /**
      * @notice Add liqudity to an exchange and burn the remaining tokens, 

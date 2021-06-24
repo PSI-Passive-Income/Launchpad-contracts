@@ -10,6 +10,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import './PSIPadCampaign.sol';
+import "./interfaces/IFeeAggregator.sol";
 import './interfaces/IPSIPadCampaignFactory.sol';
 
 contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, OwnableUpgradeable {
@@ -36,7 +37,7 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
     mapping(address => uint256[]) public userCampaigns;
 
     modifier isOwner(uint256 campaignId) {
-        require(campaigns[campaignId] != address(0), "PSIPadCampaignFactory: CAMPAIGN_DOES_NOT_EXIST");
+        require(campaigns.length > campaignId, "PSIPadCampaignFactory: CAMPAIGN_DOES_NOT_EXIST");
         require(PSIPadCampaign(campaigns[campaignId]).owner() == msg.sender, "PSIPadCampaignFactory: UNAUTHORIZED");
         _;
     }
@@ -103,6 +104,9 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
             campaign_address := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
 
+        if (token_fee > 0) IFeeAggregator(fee_aggregator).addFeeToken(_token);
+
+        (uint256 campaignTokens, uint256 feeTokens) = calculateTokens(_data);
         PSIPadCampaign(campaign_address).initialize(
             _data,
             _token,
@@ -110,7 +114,8 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
             default_factory,
             default_router,
             stable_coin_fee,
-            token_fee
+            campaignTokens,
+            feeTokens
         );
 
         campaigns.push(campaign_address);
@@ -124,7 +129,7 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         );
 
         require(
-            IERC20Upgradeable(_token).balanceOf(campaign_address) >= tokensNeeded(_data, _tokenFeePercentage), 
+            IERC20Upgradeable(_token).balanceOf(campaign_address) >= campaignTokens.add(feeTokens), 
             "PSIPadLockFactory: CAMPAIGN_TOKEN_AMOUNT_TO_LOW"
         );
 
@@ -138,12 +143,7 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         address _campaign_address,
         uint256 _tokenFeePercentage
     ) internal {
-        uint256 tokenAmount = 
-            (_data.hardCap.mul(_data.rate).div(1e18)).add(
-                (_data.hardCap.mul(_data.liquidity_rate))
-                    .mul(_data.pool_rate).div(1e22)); // pool rate 10000 x 1e18
-
-        tokenAmount += (tokenAmount.mul(_tokenFeePercentage)).div(1e5);
+        uint256 tokenAmount = tokensNeeded(_data, _tokenFeePercentage);
         IERC20Upgradeable(_token).safeTransferFrom(msg.sender, _campaign_address, tokenAmount);
     }
 
@@ -153,14 +153,21 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
     function tokensNeeded(
         IPSIPadCampaign.CampaignData calldata _data,
         uint256 _tokenFeePercentage
-    ) public override pure returns (uint256 _tokensNeeded) {
-        _tokensNeeded = 
+    ) public override view returns (uint256) {
+        (uint256 campaignTokens, uint256 feeTokens) = calculateTokens(_data);
+        uint256 totalTokens = campaignTokens.add(feeTokens);
+        // add the token fee transfer percentage if there is any
+        return totalTokens.add((totalTokens.mul(_tokenFeePercentage)).div(1e4));
+    }
+    function calculateTokens(
+        IPSIPadCampaign.CampaignData calldata _data
+    ) internal view returns (uint256 campaignTokens, uint256 feeTokens) {
+        campaignTokens = 
             (_data.hardCap.mul(_data.rate).div(1e18)).add(
                 (_data.hardCap.mul(_data.liquidity_rate))
                     .mul(_data.pool_rate).div(1e22)); // pool rate 10000 x 1e18
 
-        // add the token fee percentage if there is any
-        _tokensNeeded += (_tokensNeeded.mul(_tokenFeePercentage)).div(1e5);
+        feeTokens = (campaignTokens.mul(token_fee)).div(1e4);
     }
 
     /**
