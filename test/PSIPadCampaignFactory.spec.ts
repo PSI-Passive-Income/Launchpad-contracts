@@ -8,7 +8,7 @@ import { v2Fixture } from './shared/fixtures'
 
 import { DPexRouter, DPexRouterPairs, IWETH } from '@passive-income/dpex-peripheral/typechain'
 import { DPexFactory } from '@passive-income/dpex-swap-core/typechain'
-import { PSI, IBEP20, FeeAggregator } from '@passive-income/psi-contracts/typechain'
+import { PSI, IBEP20, FeeAggregator, IBEP20__factory } from '@passive-income/psi-contracts/typechain'
 import { PSIPadCampaignFactory, PSIPadCampaign, PSIPadTokenDeployer, TestBEP20 }  from '../typechain'
 
 import PSIPadCampaignAbi from '../abi/contracts/PSIPadCampaign.sol/PSIPadCampaign.json'
@@ -98,7 +98,7 @@ describe('PSIPadCampaignFactory', () => {
     // );
 
     it('Succeeds', async () => {
-      const expectedTokenAddress = "0xB3c57bea6D2fa61386d0fc0F5C8AEB9fBd816Ad9"
+      const expectedTokenAddress = "0x3E1033d959ba24109C1A80564108b5673358a235"
       
       await expect(campaignFactory.createCampaign(poolData, token.address, 0))
         .to.be.revertedWith("ERC20: transfer amount exceeds allowance")
@@ -123,7 +123,7 @@ describe('PSIPadCampaignFactory', () => {
     })
   })
 
-  describe('Buy and Lock', async () => {
+  describe('Buy', async () => {
     beforeEach(async function() {
       await addDefaultCampaign()
     })
@@ -201,10 +201,12 @@ describe('PSIPadCampaignFactory', () => {
       expect(await token.balanceOf(feeAggregator.address)).to.eq(expandTo18Decimals(14.5))
 
       const pairAddress = await factory.getPair(WETH.address, token.address);
+      const pair = new ethers.Contract(pairAddress, IBEP20Abi, owner) as IBEP20
       expect(await campaign.lp_address()).to.eq(pairAddress)
       expect(await WETH.balanceOf(pairAddress)).to.eq(expandTo18Decimals(15))
       expect(await token.balanceOf(pairAddress)).to.eq(expandTo18Decimals(900))
       expect(await token.balanceOf(campaign.address)).to.eq(expandTo18Decimals(2000))
+      expect(await pair.balanceOf(campaign.address)).to.eq(BigNumber.from('116189500386222505555'))
     })
 
     it('Lock: Succeeds with softcap reached', async () => {
@@ -220,10 +222,68 @@ describe('PSIPadCampaignFactory', () => {
       expect(await token.balanceOf(feeAggregator.address)).to.eq(expandTo18Decimals(7.25))
 
       const pairAddress = await factory.getPair(WETH.address, token.address);
+      const pair = new ethers.Contract(pairAddress, IBEP20Abi, owner) as IBEP20
       expect(await campaign.lp_address()).to.eq(pairAddress)
       expect(await WETH.balanceOf(pairAddress)).to.eq(expandTo18Decimals(7.5))
       expect(await token.balanceOf(pairAddress)).to.eq(expandTo18Decimals(450))
       expect(await token.balanceOf(campaign.address)).to.eq(expandTo18Decimals(2457.25))
+      expect(await pair.balanceOf(campaign.address)).to.eq(BigNumber.from('58094750193111252277'))
+    })
+  })
+
+  describe('Unlock', async () => {
+    beforeEach(async function() {
+      await addDefaultCampaign()
+    })
+
+    it('Unlock: Fails when called straight on the campaign contract', async () => {
+      await expect(campaign.unlock()).to.be.revertedWith("PSIPadCampaign: UNAUTHORIZED")
+    })
+    it('Unlock: Fails when campaign does not exist', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await expect(campaignFactory.unlock(1)).to.be.revertedWith("PSIPadCampaignFactory: CAMPAIGN_DOES_NOT_EXIST")
+    })
+    it('Unlock: Fails when user is not the owner', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await expect(campaignFactory.connect(user1).unlock(0)).to.be.revertedWith("PSIPadCampaignFactory: UNAUTHORIZED")
+    })
+    it('Unlock: Fails when campaign is not locked or has not failed', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await expect(campaignFactory.unlock(0)).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_LOCKED")
+      
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(9.99) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await expect(campaignFactory.unlock(0)).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_LOCKED")
+    })
+    it('Unlock: Fails when lock had not ended yet', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await campaignFactory.lock(0)
+
+      await expect(campaignFactory.unlock(0)).to.be.revertedWith("PSIPadCampaign: TOKENS_ARE_LOCKED")
+
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + poolData.lock_duration])
+      await expect(campaignFactory.unlock(0)).to.be.revertedWith("PSIPadCampaign: TOKENS_ARE_LOCKED")
+    })
+    it('Unlock: Succeeds', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await campaignFactory.lock(0)
+
+      const tokenBalance = await token.balanceOf(owner.address)
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1 + poolData.lock_duration])
+      await campaignFactory.unlock(0)
+
+      const pairAddress = await factory.getPair(WETH.address, token.address);
+      const pair = new ethers.Contract(pairAddress, IBEP20Abi, owner) as IBEP20
+
+      expect(await token.balanceOf(owner.address)).to.eq(tokenBalance.add(expandTo18Decimals(2457.25)))
+      expect(await token.balanceOf(campaign.address)).to.eq(0)
+      expect(await provider.getBalance(campaign.address)).to.eq(0)
+      expect(await pair.balanceOf(owner.address)).to.eq(BigNumber.from('58094750193111252277'))
+      expect(await pair.balanceOf(campaign.address)).to.eq(0)
     })
   })
 })

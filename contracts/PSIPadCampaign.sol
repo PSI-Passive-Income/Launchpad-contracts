@@ -177,7 +177,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * @notice Emergency set lp address when funds are f.e. moved. (only possible when tokens are unlocked)
      */
     function setLPAddress(address _lp_address) external override onlyOwner {
-        require(locked || failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
+        require(locked && !failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
         require(block.timestamp >= unlock_date, "PSIPadCampaign: TOKENS_ARE_LOCKED");
         lp_address = _lp_address;
     }
@@ -185,10 +185,10 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * @notice allows the owner to unlock the LP tokens and any leftover tokens after the lock has ended
      */
     function unlock() external override onlyPSIPadFactory {
-        require(locked || failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
+        require(locked && !failed(), 'PSIPadCampaign: LIQUIDITY_NOT_LOCKED');
         require(block.timestamp >= unlock_date, "PSIPadCampaign: TOKENS_ARE_LOCKED");
-        IBEP20(lp_address).transfer(msg.sender, IBEP20(lp_address).balanceOf(address(this)));
-        IBEP20(token).transfer(msg.sender, IBEP20(token).balanceOf(address(this)));
+        IBEP20(lp_address).transfer(owner(), IBEP20(lp_address).balanceOf(address(this)));
+        IBEP20(token).transfer(owner(), IBEP20(token).balanceOf(address(this)));
     }
 
     /**
