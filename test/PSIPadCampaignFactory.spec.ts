@@ -86,19 +86,33 @@ describe('PSIPadCampaignFactory', () => {
       poolData.end_date = poolData.start_date + 60 // 1 minute
     })
 
-    // require(_data.softCap < _data.hardCap, "PSIPadLockFactory: SOFTCAP_HIGHER_THEN_LOWCAP" );
-    // require(_data.start_date < _data.end_date, "PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE" );
-    // require(block.timestamp < _data.end_date, "PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE");
-    // require(_data.min_allowed < _data.hardCap, "PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP" );
-    // require(_data.rate != 0, "PSIPadLockFactory: RATE_IS_ZERO");
-    // require(_data.liquidity_rate >= 0 && _data.liquidity_rate <= 10000);
-    // require(
-    //   IERC20Upgradeable(_token).balanceOf(campaign_address) >= tokensNeeded(_data, _tokenFeePercentage), 
-    //   "PSIPadLockFactory: CAMPAIGN_TOKEN_AMOUNT_TO_LOW"
-    // );
+    it('Fails when softcap is higher then hardcap', async () => {
+      const finalData = { ...poolData, hardCap: expandTo18Decimals(9.99) }
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: SOFTCAP_HIGHER_THEN_HARDCAP")
+    })
+    it('Fails when startdate is higher then enddate', async () => {
+      const finalData = { ...poolData, end_date: poolData.start_date - 1 }
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE")
+    })
+    it('Fails when enddate is higher then current timestamp', async () => {
+      const finalData = { ...poolData, start_date: poolData.start_date - 1, end_date: poolData.start_date }
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE")
+    })
+    it('Fails when minimum allowed is higher then hardcap', async () => {
+      const finalData = { ...poolData, min_allowed: expandTo18Decimals(20.01) }
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP")
+    })
+    it('Fails when token rate is zero', async () => {
+      const finalData = { ...poolData, rate: 0 }
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: RATE_IS_ZERO")
+    })
+    it('Fails when liquidity rate is higher then 10000', async () => {
+      const finalData = { ...poolData, liquidity_rate: 10001 }
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: LIQUIDITY_RATE_0_10000")
+    })
 
     it('Succeeds', async () => {
-      const expectedTokenAddress = "0x3E1033d959ba24109C1A80564108b5673358a235"
+      const expectedTokenAddress = "0x99b8359D9D627B92806140DB9A9d19A8EE598835"
       
       await expect(campaignFactory.createCampaign(poolData, token.address, 0))
         .to.be.revertedWith("ERC20: transfer amount exceeds allowance")
@@ -128,21 +142,21 @@ describe('PSIPadCampaignFactory', () => {
       await addDefaultCampaign()
     })
 
-    it('Buy: Presale not live yet', async () => {
+    it('Fails when presale is not live yet', async () => {
       await expect(campaign.connect(user1).buyTokens()).to.be.revertedWith("PSIPadCampaign: CAMPAIGN_NOT_LIVE")
     })
-    it('Buy: Below minimum amount', async () => {
+    it('Fails when amoun is below minimum amount', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await expect(campaign.connect(user1).buyTokens({ value: expandTo18Decimals(0.099) })).to.be.revertedWith("PSIPadCampaign: BELOW_MIN_AMOUNT")
     })
-    it('Buy: Above maximum amount', async () => {
+    it('Fails when amount is above maximum amount', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await expect(campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.01) })).to.be.revertedWith("PSIPadCampaign: ABOVE_MAX_AMOUNT")
 
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
       await expect(campaign.connect(user1).buyTokens({ value: expandTo18Decimals(0.1) })).to.be.revertedWith("PSIPadCampaign: ABOVE_MAX_AMOUNT")
     })
-    it('Buy: Not enough remaining tokens', async () => {
+    it('Fails when not enough remaining tokens', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
       await campaign.connect(user2).buyTokens({ value: expandTo18Decimals(9.00) })
@@ -150,7 +164,7 @@ describe('PSIPadCampaignFactory', () => {
       expect(await campaign.collected()).to.eq(expandTo18Decimals(19.00))
       expect(await campaign.finalized()).to.eq(false)
     })
-    it('Buy: Succeeds and finalizes', async () => {
+    it('Succeeds and finalizes', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
       await campaign.connect(user2).buyTokens({ value: expandTo18Decimals(10.00) })
@@ -165,29 +179,29 @@ describe('PSIPadCampaignFactory', () => {
       await addDefaultCampaign()
     })
 
-    it('Lock: Fails when campaign has not started yet', async () => {
+    it('Fails when campaign has not started yet', async () => {
       await expect(campaignFactory.lock(0)).to.be.revertedWith("PSIPadCampaign: CAMPAIGN_NOT_STARTED")
     })
-    it('Lock: Fails when campaign does not exist', async () => {
+    it('Fails when campaign does not exist', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await expect(campaignFactory.lock(1)).to.be.revertedWith("PSIPadCampaignFactory: CAMPAIGN_DOES_NOT_EXIST")
     })
-    it('Lock: Fails when user is not the owner', async () => {
+    it('Fails when user is not the owner', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await expect(campaignFactory.connect(user1).lock(0)).to.be.revertedWith("PSIPadCampaignFactory: UNAUTHORIZED")
     })
-    it('Lock: Fails when campaign is still live', async () => {
+    it('Fails when campaign is still live', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await expect(campaignFactory.lock(0)).to.be.revertedWith("PSIPadCampaign: CAMPAIGN_STILL_LIVE")
     })
-    it('Lock: Fails when the campaign has failed (e.g. soft cap not reached)', async () => {
+    it('Fails when the campaign has failed (e.g. soft cap not reached)', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
       await expect(campaignFactory.lock(0)).to.be.revertedWith("PSIPadCampaign: CAMPAIGN_FAILED")
     })
-    it('Lock: Fails when lock is called straight on the campaign contract', async () => {
+    it('Fails when lock is called straight on the campaign contract', async () => {
       await expect(campaign.lock()).to.be.revertedWith("PSIPadCampaign: UNAUTHORIZED")
     })
-    it('Lock: Succeeds with hardcap reached', async () => {
+    it('Succeeds with hardcap reached', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
       await campaign.connect(user2).buyTokens({ value: expandTo18Decimals(10.00) })
@@ -209,7 +223,7 @@ describe('PSIPadCampaignFactory', () => {
       expect(await pair.balanceOf(campaign.address)).to.eq(BigNumber.from('116189500386222505555'))
     })
 
-    it('Lock: Succeeds with softcap reached', async () => {
+    it('Succeeds with softcap reached', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
 
@@ -236,18 +250,18 @@ describe('PSIPadCampaignFactory', () => {
       await addDefaultCampaign()
     })
 
-    it('Unlock: Fails when called straight on the campaign contract', async () => {
+    it('Fails when called straight on the campaign contract', async () => {
       await expect(campaign.unlock()).to.be.revertedWith("PSIPadCampaign: UNAUTHORIZED")
     })
-    it('Unlock: Fails when campaign does not exist', async () => {
+    it('Fails when campaign does not exist', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await expect(campaignFactory.unlock(1)).to.be.revertedWith("PSIPadCampaignFactory: CAMPAIGN_DOES_NOT_EXIST")
     })
-    it('Unlock: Fails when user is not the owner', async () => {
+    it('Fails when user is not the owner', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await expect(campaignFactory.connect(user1).unlock(0)).to.be.revertedWith("PSIPadCampaignFactory: UNAUTHORIZED")
     })
-    it('Unlock: Fails when campaign is not locked or has not failed', async () => {
+    it('Fails when campaign is not locked or has not failed', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await expect(campaignFactory.unlock(0)).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_LOCKED")
       
@@ -255,7 +269,7 @@ describe('PSIPadCampaignFactory', () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
       await expect(campaignFactory.unlock(0)).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_LOCKED")
     })
-    it('Unlock: Fails when lock had not ended yet', async () => {
+    it('Fails when lock had not ended yet', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
@@ -266,7 +280,7 @@ describe('PSIPadCampaignFactory', () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + poolData.lock_duration])
       await expect(campaignFactory.unlock(0)).to.be.revertedWith("PSIPadCampaign: TOKENS_ARE_LOCKED")
     })
-    it('Unlock: Succeeds', async () => {
+    it('Succeeds', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
@@ -284,6 +298,136 @@ describe('PSIPadCampaignFactory', () => {
       expect(await provider.getBalance(campaign.address)).to.eq(0)
       expect(await pair.balanceOf(owner.address)).to.eq(BigNumber.from('58094750193111252277'))
       expect(await pair.balanceOf(campaign.address)).to.eq(0)
+    })
+  })
+
+  describe('LP address change', async () => {
+    beforeEach(async function() {
+      await addDefaultCampaign()
+    })
+
+    it('Fails when user is not the owner', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await expect(campaign.connect(user1).setLPAddress(token.address)).to.be.revertedWith("Ownable: caller is not the owner")
+    })
+    it('Fails when campaign is not locked or has not failed', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await expect(campaign.setLPAddress(token.address)).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_LOCKED")
+      
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(9.99) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await expect(campaign.setLPAddress(token.address)).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_LOCKED")
+    })
+    it('Fails when lock had not ended yet', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await campaignFactory.lock(0)
+
+      await expect(campaign.setLPAddress(token.address)).to.be.revertedWith("PSIPadCampaign: TOKENS_ARE_LOCKED")
+
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + poolData.lock_duration])
+      await expect(campaign.setLPAddress(token.address)).to.be.revertedWith("PSIPadCampaign: TOKENS_ARE_LOCKED")
+    })
+    it('Succeeds', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await campaignFactory.lock(0)
+
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1 + poolData.lock_duration])
+      await campaign.setLPAddress(token.address)
+      expect(await campaign.lp_address()).to.eq(token.address)
+    })
+  })
+
+  describe('Withdraw tokens', async () => {
+    beforeEach(async function() {
+      await addDefaultCampaign()
+    })
+
+    it('Fails when tokens are not locked yet', async () => {
+      await expect(campaign.connect(user1).withdrawTokens()).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_ADDED")
+
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await expect(campaign.connect(user1).withdrawTokens()).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_ADDED")
+
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await expect(campaign.connect(user1).withdrawTokens()).to.be.revertedWith("PSIPadCampaign: LIQUIDITY_NOT_ADDED")
+      await campaignFactory.lock(0)
+    })
+    it('Fails when not a participant', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await campaignFactory.lock(0)
+      await expect(campaign.connect(user2).withdrawTokens()).to.be.revertedWith("PSIPadCampaign: NO_PARTICIPANT")
+    })
+    it('Succeeds', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await campaignFactory.lock(0)
+
+      await campaign.connect(user1).withdrawTokens();
+      expect(await token.balanceOf(user1.address)).to.eq(expandTo18Decimals(1000))
+    })
+  })
+
+  describe('Withdraw funds', async () => {
+    beforeEach(async function() {
+      await addDefaultCampaign()
+    })
+
+    it('Fails when not failed or refunded', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await campaignFactory.lock(0)
+
+      await expect(campaign.connect(user1).withdrawFunds()).to.be.revertedWith("PSIPadCampaign: CAMPAIGN_NOT_FAILED")
+    })
+    it('Fails when not a participant', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(9.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+
+      await expect(campaign.connect(user2).withdrawFunds()).to.be.revertedWith("PSIPadCampaign: NO_PARTICIPANT")
+    })
+    it('Succeeds when failed', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(9.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+
+      const balance = await provider.getBalance(user1.address);
+      const transaction = await campaign.connect(user1).withdrawFunds()
+      const receipt = await provider.getTransactionReceipt(transaction.hash);
+      const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
+      expect(await provider.getBalance(user1.address)).to.eq(balance.add(expandTo18Decimals(9)).sub(etherUsed))
+    })
+    it('Succeeds when refunded', async () => {
+      await token.approve(router.address, expandTo18Decimals(1))
+      await router.addLiquidityETH (
+        token.address,
+        expandTo18Decimals(1),
+        0,
+        0,
+        owner.address,
+        (await provider.getBlock(provider.blockNumber)).timestamp + 60,
+        { value: expandTo18Decimals(0.1) }
+      );
+      
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+      await campaignFactory.lock(0)
+      
+      const balance = await provider.getBalance(user1.address);
+      const transaction = await campaign.connect(user1).withdrawFunds()
+      const receipt = await provider.getTransactionReceipt(transaction.hash);
+      const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
+      expect(await provider.getBalance(user1.address)).to.eq(balance.add(expandTo18Decimals(10)).sub(etherUsed))
     })
   })
 })

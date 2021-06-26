@@ -91,12 +91,13 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         address _token,
         uint256 _tokenFeePercentage
     ) external override returns (address campaign_address) {
-        require(_data.softCap < _data.hardCap, "PSIPadLockFactory: SOFTCAP_HIGHER_THEN_LOWCAP" );
+        require(_data.softCap < _data.hardCap, "PSIPadLockFactory: SOFTCAP_HIGHER_THEN_HARDCAP" );
         require(_data.start_date < _data.end_date, "PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE" );
         require(block.timestamp < _data.end_date, "PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE");
         require(_data.min_allowed < _data.hardCap, "PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP" );
         require(_data.rate != 0, "PSIPadLockFactory: RATE_IS_ZERO");
-        require(_data.liquidity_rate >= 0 && _data.liquidity_rate <= 10000);
+        require(_data.liquidity_rate >= 0 && _data.liquidity_rate <= 10000, 
+            "PSIPadLockFactory: LIQUIDITY_RATE_0_10000");
         
         bytes memory bytecode = type(PSIPadCampaign).creationCode;
         bytes32 salt = keccak256(abi.encodePacked(_token, msg.sender));
@@ -128,10 +129,8 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
             _tokenFeePercentage
         );
 
-        require(
-            IERC20Upgradeable(_token).balanceOf(campaign_address) >= campaignTokens.add(feeTokens), 
-            "PSIPadLockFactory: CAMPAIGN_TOKEN_AMOUNT_TO_LOW"
-        );
+        require(IERC20Upgradeable(_token).balanceOf(campaign_address) >= campaignTokens.add(feeTokens), 
+            "PSIPadLockFactory: CAMPAIGN_TOKEN_AMOUNT_TO_LOW");
 
         emit CampaignAdded(campaign_address, _token, msg.sender);
         
