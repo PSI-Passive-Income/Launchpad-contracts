@@ -126,6 +126,8 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
             unlock_date = (block.timestamp).add(data.lock_duration);
 
             transferFees(tokenFee, stableFee);
+
+            emit CampaignLocked(collected);
         }
     }
     function calculateFees() internal view returns (uint256 tokenFee, uint256 stableFee) {
@@ -202,6 +204,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         require(block.timestamp >= unlock_date, "PSIPadCampaign: TOKENS_ARE_LOCKED");
         IERC20Upgradeable(lp_address).safeTransfer(owner(), IBEP20(lp_address).balanceOf(address(this)));
         IERC20Upgradeable(token).safeTransfer(owner(), IBEP20(token).balanceOf(address(this)));
+        emit CampaignUnlocked();
     }
 
     /**

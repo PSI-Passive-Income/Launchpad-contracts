@@ -84,13 +84,21 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
 
     /**
      * @notice Start a new campaign using
-     * @dev 1 ETH = 1 XYZ (_pool_rate = 1e18) <=> 1 ETH = 10 XYZ (_pool_rate = 1e19) <=> XYZ (decimals = 18)
+     * @dev 1 ETH = 1 XYZ (pool_rate = 1e18) <=> 1 ETH = 10 XYZ (pool_rate = 1e19) <=> XYZ (decimals = 18)
      */
-    function createCampaign(
+     function createCampaign(
         IPSIPadCampaign.CampaignData calldata _data,
         address _token,
         uint256 _tokenFeePercentage
     ) external override returns (address campaign_address) {
+        return createCampaignWithOwner(_data, msg.sender, _token, _tokenFeePercentage);
+    }
+    function createCampaignWithOwner(
+        IPSIPadCampaign.CampaignData calldata _data,
+        address _owner,
+        address _token,
+        uint256 _tokenFeePercentage
+    ) public override returns (address campaign_address) {
         require(_data.softCap < _data.hardCap, "PSIPadLockFactory: SOFTCAP_HIGHER_THEN_HARDCAP" );
         require(_data.start_date < _data.end_date, "PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE" );
         require(block.timestamp < _data.end_date, "PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE");
@@ -100,7 +108,7 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
             "PSIPadLockFactory: LIQUIDITY_RATE_0_10000");
         
         bytes memory bytecode = type(PSIPadCampaign).creationCode;
-        bytes32 salt = keccak256(abi.encodePacked(_token, msg.sender));
+        bytes32 salt = keccak256(abi.encodePacked(_token, _owner));
         assembly {
             campaign_address := create2(0, add(bytecode, 32), mload(bytecode), salt)
         }
@@ -111,7 +119,7 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         PSIPadCampaign(campaign_address).initialize(
             _data,
             _token,
-            msg.sender,
+            _owner,
             default_factory,
             default_router,
             stable_coin_fee,
@@ -120,7 +128,7 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         );
 
         campaigns.push(campaign_address);
-        userCampaigns[msg.sender].push(campaigns.length -1);
+        userCampaigns[_owner].push(campaigns.length -1);
 
         transferToCampaign(
             _data,
@@ -132,7 +140,7 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         require(IERC20Upgradeable(_token).balanceOf(campaign_address) >= campaignTokens.add(feeTokens), 
             "PSIPadLockFactory: CAMPAIGN_TOKEN_AMOUNT_TO_LOW");
 
-        emit CampaignAdded(campaign_address, _token, msg.sender);
+        emit CampaignAdded(campaign_address, _token, _owner);
         
         return campaign_address;
     }

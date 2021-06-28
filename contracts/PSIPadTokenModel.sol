@@ -16,12 +16,11 @@ contract PSIPadTokenModel is ContextUpgradeable, IBEP20, AnyswapV4ERC20 {
     function initialize(
         string memory tokenName,
         string memory tokenSymbols,
-        uint8 tokenDecimals,
         uint256 tokenTotalSupply
     ) external initializer {
         require(msg.sender == deployer, 'You are not allowed');
-        super.__AnyswapV4ERC20_init(tokenName, tokenSymbols, tokenDecimals, address(0), address(0));
-        _mint(_msgSender(), tokenTotalSupply * 10**decimals());
+        super.__AnyswapV4ERC20_init(tokenName, tokenSymbols, 18, address(0), address(0));
+        _mint(_msgSender(), tokenTotalSupply);
     }
 
     //== BEP20 owner function ==

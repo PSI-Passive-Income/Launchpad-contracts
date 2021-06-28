@@ -1,24 +1,19 @@
 import chai, { expect } from 'chai'
-import { BigNumber, BigNumberish, constants } from 'ethers'
+import { BigNumber } from 'ethers'
 import { ethers, waffle } from 'hardhat'
-import { ecsign } from 'ethereumjs-util'
 
-import { expandTo18Decimals, getApprovalDigest, mineBlock, MINIMUM_LIQUIDITY } from './shared/utilities'
+import { expandTo18Decimals } from './shared/utilities'
 import { v2Fixture } from './shared/fixtures'
 
-import { DPexRouter, DPexRouterPairs, IWETH } from '@passive-income/dpex-peripheral/typechain'
+import { DPexRouter, IWETH } from '@passive-income/dpex-peripheral/typechain'
 import { DPexFactory } from '@passive-income/dpex-swap-core/typechain'
-import { PSI, IBEP20, FeeAggregator, IBEP20__factory } from '@passive-income/psi-contracts/typechain'
-import { PSIPadCampaignFactory, PSIPadCampaign, PSIPadTokenDeployer, TestBEP20 }  from '../typechain'
+import { PSI, IBEP20, FeeAggregator } from '@passive-income/psi-contracts/typechain'
+import { PSIPadCampaignFactory, PSIPadCampaign, PSIPadTokenDeployer }  from '../typechain'
 
 import PSIPadCampaignAbi from '../abi/contracts/PSIPadCampaign.sol/PSIPadCampaign.json'
 import IBEP20Abi from '@passive-income/psi-contracts/abi/contracts/interfaces/IBEP20.sol/IBEP20.json'
 
 chai.use(waffle.solidity)
-
-const overrides = {
-  gasLimit: 9500000
-}
 
 describe('PSIPadCampaignFactory', () => {
   const { provider, createFixtureLoader } = waffle;
@@ -112,7 +107,7 @@ describe('PSIPadCampaignFactory', () => {
     })
 
     it('Succeeds', async () => {
-      const expectedTokenAddress = "0x99b8359D9D627B92806140DB9A9d19A8EE598835"
+      const expectedCampaignAddress = "0x73DB21674F208BE9a1449697e24f204430F74269"
       
       await expect(campaignFactory.createCampaign(poolData, token.address, 0))
         .to.be.revertedWith("ERC20: transfer amount exceeds allowance")
@@ -121,14 +116,14 @@ describe('PSIPadCampaignFactory', () => {
       await token.approve(campaignFactory.address, tokensNeeded)
       await expect(campaignFactory.createCampaign(poolData, token.address, 0))
         .to.emit(campaignFactory, 'CampaignAdded')
-        .withArgs(expectedTokenAddress, token.address, owner.address)
+        .withArgs(expectedCampaignAddress, token.address, owner.address)
 
       const userCampaigns = await campaignFactory.getUserCampaigns(owner.address)
       expect(userCampaigns.length).to.eq(1)
       expect(userCampaigns[0]).to.eq(0)
 
       const campaignAddress = await campaignFactory.campaigns(0)
-      expect(campaignAddress).to.eq(expectedTokenAddress)
+      expect(campaignAddress).to.eq(expectedCampaignAddress)
       expect(await token.balanceOf(campaignAddress)).to.eq(tokensNeeded)
 
       const campaign = new ethers.Contract(campaignAddress, PSIPadCampaignAbi, owner) as PSIPadCampaign
@@ -166,8 +161,13 @@ describe('PSIPadCampaignFactory', () => {
     })
     it('Succeeds and finalizes', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
-      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
-      await campaign.connect(user2).buyTokens({ value: expandTo18Decimals(10.00) })
+      await expect(campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) }))
+        .to.emit(campaign, 'TokensBought')
+        .withArgs(user1.address, expandTo18Decimals(10.00))
+      await expect(campaign.connect(user2).buyTokens({ value: expandTo18Decimals(10.00) }))
+        .to.emit(campaign, 'TokensBought')
+        .withArgs(user2.address, expandTo18Decimals(10.00))
+
       expect(await campaign.collected()).to.eq(expandTo18Decimals(20.00))
       expect(await campaign.finalized()).to.eq(true)
       expect(await provider.getBalance(campaign.address)).to.eq(expandTo18Decimals(20.00))
@@ -207,7 +207,12 @@ describe('PSIPadCampaignFactory', () => {
       await campaign.connect(user2).buyTokens({ value: expandTo18Decimals(10.00) })
 
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date + 30])
-      await campaignFactory.lock(0)
+      await expect(campaignFactory.lock(0))
+        .to.emit(campaignFactory, 'CampaignLocked')
+        .withArgs(campaign.address, token.address, expandTo18Decimals(20.00))
+        .to.emit(campaign, 'CampaignLocked')
+        .withArgs(expandTo18Decimals(20.00))
+
       expect(await campaign.locked()).to.eq(true)
       expect(await campaign.unlock_date()).to.eq(poolData.start_date + 30 + poolData.lock_duration)
 
@@ -228,7 +233,12 @@ describe('PSIPadCampaignFactory', () => {
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
 
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
-      await campaignFactory.lock(0)
+      await expect(campaignFactory.lock(0))
+        .to.emit(campaignFactory, 'CampaignLocked')
+        .withArgs(campaign.address, token.address, expandTo18Decimals(10.00))
+        .to.emit(campaign, 'CampaignLocked')
+        .withArgs(expandTo18Decimals(10.00))
+
       expect(await campaign.locked()).to.eq(true)
       expect(await campaign.unlock_date()).to.eq(poolData.end_date + 1 + poolData.lock_duration)
 
@@ -288,7 +298,10 @@ describe('PSIPadCampaignFactory', () => {
 
       const tokenBalance = await token.balanceOf(owner.address)
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1 + poolData.lock_duration])
-      await campaignFactory.unlock(0)
+      await expect(campaignFactory.unlock(0))
+        .to.emit(campaignFactory, 'CampaignUnlocked')
+        .withArgs(campaign.address, token.address)
+        .to.emit(campaign, 'CampaignUnlocked')
 
       const pairAddress = await factory.getPair(WETH.address, token.address);
       const pair = new ethers.Contract(pairAddress, IBEP20Abi, owner) as IBEP20

@@ -6,15 +6,15 @@ import { ecsign } from 'ethereumjs-util'
 import { expandTo18Decimals, getApprovalDigest, mineBlock, MINIMUM_LIQUIDITY } from './shared/utilities'
 import { v2Fixture } from './shared/fixtures'
 
-import { IWETH } from '@passive-income/dpex-peripheral/typechain'
-import { PSI, FeeAggregator, IBEP20 } from '@passive-income/psi-contracts/typechain'
-import { PSIPadTokenLockFactory }  from '../typechain'
+import { DPexRouter, IWETH } from '@passive-income/dpex-peripheral/typechain'
+import { DPexFactory } from '@passive-income/dpex-swap-core/typechain'
+import { PSI, IBEP20, FeeAggregator } from '@passive-income/psi-contracts/typechain'
+import { PSIPadCampaignFactory, PSIPadCampaign, PSIPadTokenDeployer, PSIPadTokenLockFactory }  from '../typechain'
+
+import PSIPadCampaignAbi from '../abi/contracts/PSIPadCampaign.sol/PSIPadCampaign.json'
+import IBEP20Abi from '@passive-income/psi-contracts/abi/contracts/interfaces/IBEP20.sol/IBEP20.json'
 
 chai.use(waffle.solidity)
-
-const overrides = {
-  gasLimit: 9500000
-}
 
 describe('PSIPadTokenLockFactory', () => {
   const { provider, createFixtureLoader } = waffle;

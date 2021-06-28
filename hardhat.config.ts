@@ -22,30 +22,21 @@ const config: HardhatUserConfig = {
       //   blockNumber: 11754056
       // }
     },
-    hardhatnode: {
-      url: `http://127.0.0.1:8545`,
-      accounts: [`0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`]
-    },
     bsctestnet: {
       url: "https://data-seed-prebsc-1-s2.binance.org:8545",
       chainId: 97,
       accounts: [`0x${process.env.BSC_TEST_PRIVATE_KEY}`],
-      gasPrice: 15000000000,
+    },
+    bscmainnet: {
+      url: "https://bsc-dataseed.binance.org/",
+      chainId: 56,
+      accounts: [`0x${process.env.BSC_PRIVATE_KEY}`],
     },
     ganache: {
       url: "HTTP://127.0.0.1:7545",
       chainId: 1337,
       accounts: [`0x767f7322259ccc3a24165da6767b2a76f7cd94b2e4b0f76beb65b8b07ec11990`]
-    },
-    ganachebscfork: {
-      url: "HTTP://127.0.0.1:7546",
-      chainId: 1337,
-      accounts: [`0x1fee182f2c9006568480db38a8dbc6d3e109621fe6411382a2b603a383f2b3da`]
     }
-    // rinkeby: {
-    //   url: `${process.env.RINKEBY_INFURA}`,
-    //   accounts: [`0x${process.env.RINKEBY_PRIVATE_KEY}`]
-    // }
   },
   etherscan: {
     // Your API key for Etherscan

@@ -30,8 +30,14 @@ interface IPSIPadCampaignFactory {
      * @notice Start a new campaign using
      * @dev 1 ETH = 1 XYZ (_pool_rate = 1e18) <=> 1 ETH = 10 XYZ (_pool_rate = 1e19) <=> XYZ (decimals = 18)
      */
-    function createCampaign(
+     function createCampaign(
         IPSIPadCampaign.CampaignData calldata _data,
+        address _token,
+        uint256 _tokenFeePercentage
+    ) external returns (address campaign_address);
+    function createCampaignWithOwner(
+        IPSIPadCampaign.CampaignData calldata _data,
+        address _owner,
         address _token,
         uint256 _tokenFeePercentage
     ) external returns (address campaign_address);
