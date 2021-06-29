@@ -11,6 +11,7 @@ This project is using [Hardhat](https://hardhat.org/getting-started/) for develo
   * PSI : [0x066Bd99080eC62FE0E28bA687A53aC00794c17b6](https://testnet.bscscan.com/address/0x066Bd99080eC62FE0E28bA687A53aC00794c17b6)
   * PSIPadCampaignFactory : [0xBFf0D82794b1Fa4B031dD85A800340214C28CF84](https://testnet.bscscan.com/address/0xBFf0D82794b1Fa4B031dD85A800340214C28CF84)
   * PSIPadTokenDeployer : [0x8f550E913B7f5F0b5fff15ad8951A99aB7c85E47](https://testnet.bscscan.com/address/0x8f550E913B7f5F0b5fff15ad8951A99aB7c85E47)
+  * PSIPadTokenLockFactory : [0x964c5cA7Abb66f53e912f0E0d8F17eD0FBbB9042](https://testnet.bscscan.com/address/0x964c5cA7Abb66f53e912f0E0d8F17eD0FBbB9042)
 
 ## Compiling
 

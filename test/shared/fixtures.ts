@@ -80,7 +80,7 @@ export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Prov
 
   // deploy PSIPadTokenLockFactory
   const PSIPadTokenLockFactory = await ethers.getContractFactory("PSIPadTokenLockFactory");
-  const tokenLockFactory =  await upgrades.deployProxy(PSIPadTokenLockFactory, [feeAggregator.address, WETH.address, 100, 50], {initializer: 'initialize'}) as unknown as PSIPadTokenLockFactory
+  const tokenLockFactory =  await upgrades.deployProxy(PSIPadTokenLockFactory, [feeAggregator.address, WETH.address, expandTo18Decimals(0.2)], {initializer: 'initialize'}) as unknown as PSIPadTokenLockFactory
 
   return {
     psi,

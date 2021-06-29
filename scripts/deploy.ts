@@ -38,20 +38,20 @@ const main = async() => {
 
   console.log("deploying");
 
-  const PSIPadCampaignFactory = await ethers.getContractFactory("PSIPadCampaignFactory");
-  const campaignFactory: PSIPadCampaignFactory = await upgrades.deployProxy(PSIPadCampaignFactory, [factory, router, feeAggregator, baseContract, 100, 50], { initializer: 'initialize' }) as PSIPadCampaignFactory;
-  await campaignFactory.deployed();
-  console.log("PSIPadCampaignFactory deployed to:", campaignFactory.address);
+  // const PSIPadCampaignFactory = await ethers.getContractFactory("PSIPadCampaignFactory");
+  // const campaignFactory: PSIPadCampaignFactory = await upgrades.deployProxy(PSIPadCampaignFactory, [factory, router, feeAggregator, baseContract, 100, 50], { initializer: 'initialize' }) as PSIPadCampaignFactory;
+  // await campaignFactory.deployed();
+  // console.log("PSIPadCampaignFactory deployed to:", campaignFactory.address);
 
-  const PSIPadTokenDeployer = await ethers.getContractFactory("PSIPadTokenDeployer");
-  const tokenDeployer: PSIPadTokenDeployer = await upgrades.deployProxy(PSIPadTokenDeployer, [campaignFactory.address], { initializer: 'initialize' }) as PSIPadTokenDeployer;
-  await tokenDeployer.deployed();
-  console.log("PSIPadTokenDeployer deployed to:", tokenDeployer.address);
+  // const PSIPadTokenDeployer = await ethers.getContractFactory("PSIPadTokenDeployer");
+  // const tokenDeployer: PSIPadTokenDeployer = await upgrades.deployProxy(PSIPadTokenDeployer, [campaignFactory.address], { initializer: 'initialize' }) as PSIPadTokenDeployer;
+  // await tokenDeployer.deployed();
+  // console.log("PSIPadTokenDeployer deployed to:", tokenDeployer.address);
 
-  // const PSIPadTokenLockFactory = await ethers.getContractFactory("PSIPadTokenLockFactory");
-  // const tokenLockFactory: PSIPadTokenLockFactory = await upgrades.deployProxy(PSIPadTokenLockFactory, [feeAggregator, baseContract, 100, 50], { initializer: 'initialize' }) as PSIPadTokenLockFactory;
-  // await tokenLockFactory.deployed();
-  // console.log("PSIPadTokenLockFactory deployed to:", tokenLockFactory.address);
+  const PSIPadTokenLockFactory = await ethers.getContractFactory("PSIPadTokenLockFactory");
+  const tokenLockFactory: PSIPadTokenLockFactory = await upgrades.deployProxy(PSIPadTokenLockFactory, [feeAggregator, baseContract, ethers.utils.parseUnits("0.2", 18)], { initializer: 'initialize' }) as PSIPadTokenLockFactory;
+  await tokenLockFactory.deployed();
+  console.log("PSIPadTokenLockFactory deployed to:", tokenLockFactory.address);
 }
 
 main()
