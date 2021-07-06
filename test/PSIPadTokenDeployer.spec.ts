@@ -37,6 +37,17 @@ describe('PSITokenDeployer', () => {
     tokenDeployer = fixture.tokenDeployer
   })
 
+  const tokenData = {
+    name: "Test Token",
+    symbol: "TT",
+    initialSupply: TOTAL_SUPPLY,
+    maximumSupply: TOTAL_SUPPLY,
+    burnable: false,
+    mintable: false,
+    operable: false,
+    tokenRecover: false,
+    crossChain: false
+  }
   const poolData = {
     softCap: expandTo18Decimals(10), // 10 bnb
     hardCap: expandTo18Decimals(20), // 20 bnb
@@ -65,34 +76,34 @@ describe('PSITokenDeployer', () => {
 
     it('Fails when softcap is higher then hardcap', async () => {
       const finalData = { ...poolData, hardCap: expandTo18Decimals(9.99) }
-      await expect(tokenDeployer.createTokenWithCampaign("Test Token", "TT", TOTAL_SUPPLY, finalData)).to.be.revertedWith("PSIPadLockFactory: SOFTCAP_HIGHER_THEN_HARDCAP")
+      await expect(tokenDeployer.createTokenWithCampaign(tokenData, finalData)).to.be.revertedWith("PSIPadLockFactory: SOFTCAP_HIGHER_THEN_HARDCAP")
     })
     it('Fails when startdate is higher then enddate', async () => {
       const finalData = { ...poolData, end_date: poolData.start_date - 1 }
-      await expect(tokenDeployer.createTokenWithCampaign("Test Token", "TT", TOTAL_SUPPLY, finalData)).to.be.revertedWith("PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE")
+      await expect(tokenDeployer.createTokenWithCampaign(tokenData, finalData)).to.be.revertedWith("PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE")
     })
     it('Fails when enddate is higher then current timestamp', async () => {
       const finalData = { ...poolData, start_date: poolData.start_date - 1, end_date: poolData.start_date }
-      await expect(tokenDeployer.createTokenWithCampaign("Test Token", "TT", TOTAL_SUPPLY, finalData)).to.be.revertedWith("PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE")
+      await expect(tokenDeployer.createTokenWithCampaign(tokenData, finalData)).to.be.revertedWith("PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE")
     })
     it('Fails when minimum allowed is higher then hardcap', async () => {
       const finalData = { ...poolData, min_allowed: expandTo18Decimals(20.01) }
-      await expect(tokenDeployer.createTokenWithCampaign("Test Token", "TT", TOTAL_SUPPLY, finalData)).to.be.revertedWith("PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP")
+      await expect(tokenDeployer.createTokenWithCampaign(tokenData, finalData)).to.be.revertedWith("PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP")
     })
     it('Fails when token rate is zero', async () => {
       const finalData = { ...poolData, rate: 0 }
-      await expect(tokenDeployer.createTokenWithCampaign("Test Token", "TT", TOTAL_SUPPLY, finalData)).to.be.revertedWith("PSIPadLockFactory: RATE_IS_ZERO")
+      await expect(tokenDeployer.createTokenWithCampaign(tokenData, finalData)).to.be.revertedWith("PSIPadLockFactory: RATE_IS_ZERO")
     })
     it('Fails when liquidity rate is higher then 10000', async () => {
       const finalData = { ...poolData, liquidity_rate: 10001 }
-      await expect(tokenDeployer.createTokenWithCampaign("Test Token", "TT", TOTAL_SUPPLY, finalData)).to.be.revertedWith("PSIPadLockFactory: LIQUIDITY_RATE_0_10000")
+      await expect(tokenDeployer.createTokenWithCampaign(tokenData, finalData)).to.be.revertedWith("PSIPadLockFactory: LIQUIDITY_RATE_0_10000")
     })
 
     it('Succeeds', async () => {
       const tokensNeeded = await campaignFactory.tokensNeeded(poolData, 0)
-      await expect(tokenDeployer.createTokenWithCampaign("Test Token", "TT", TOTAL_SUPPLY, poolData))
+      await expect(tokenDeployer.createTokenWithCampaign(tokenData, poolData))
         .to.emit(tokenDeployer, 'TokenCreated')
-        .withArgs(expectedTokenAddress, "Test Token", "TT", TOTAL_SUPPLY)
+        .withArgs(expectedTokenAddress, tokenData.name, tokenData.symbol, tokenData.initialSupply)
         .to.emit(campaignFactory, 'CampaignAdded')
         .withArgs(expectedCampaignAddress, expectedTokenAddress, owner.address)
 
@@ -112,7 +123,8 @@ describe('PSITokenDeployer', () => {
 
     it('Fails when too few tokens created', async () => {
       const tokensNeeded = await campaignFactory.tokensNeeded(poolData, 0)
-      await expect(tokenDeployer.createTokenWithCampaign("Test Token", "TT", tokensNeeded.sub(1), poolData))
+      tokenData.initialSupply = tokensNeeded.sub(1)
+      await expect(tokenDeployer.createTokenWithCampaign(tokenData, poolData))
         .to.be.revertedWith("ERC20: transfer amount exceeds balance")
     })
   })
