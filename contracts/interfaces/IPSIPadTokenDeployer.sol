@@ -5,6 +5,11 @@ pragma solidity ^0.8.4;
 import './IPSIPadCampaign.sol';
 
 interface IPSIPadTokenDeployer {
+    enum TokenType {
+        Base,
+        BaseAnySwap
+    }
+
     struct TokenData {
         string name;
         string symbol;
@@ -12,18 +17,38 @@ interface IPSIPadTokenDeployer {
         uint256 maximumSupply;
         bool burnable;
         bool mintable;
-        bool operable;
-        bool tokenRecover;
+        uint256 minterDelay;
         bool crossChain;
+        address underlying;
+        address vault;
     }
 
     function campaignFactory() external view returns (address);
 
+    function fee_aggregator() external view returns (address);
+
+    function stable_coin() external view returns (address);
+
+    function stable_coin_fee() external view returns (uint256);
+
+    function tokenTypes(TokenType typeId) external view returns (address);
+
     function tokens(uint256 idx) external view returns (address);
 
-    event TokenCreated(address token, string name, string symbol, uint256 totalSupply);
+    event TokenCreated(address indexed owner, address token, string name, string symbol, uint256 totalSupply);
+
+    function setCampaingFactory(address _campaignFactory) external;
+
+    function setFeeAggregator(address _fee_aggregator) external;
+
+    function setStableCoin(address _stable_coin) external;
+
+    function setStableCoinFee(uint256 _stable_coin_fee) external;
+
+    function setTokenType(TokenType tokenType, address implementation) external;
 
     function createTokenWithCampaign(TokenData calldata tokenData, IPSIPadCampaign.CampaignData calldata campaignData)
         external
+        payable
         returns (address token_address);
 }

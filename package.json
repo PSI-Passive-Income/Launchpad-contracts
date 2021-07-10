@@ -27,7 +27,8 @@
     "@passive-income/psi-contracts": "~1.0.10",
     "@truffle/hdwallet-provider": "^1.2.1",
     "@uniswap/lib": "1.1.1",
-    "dotenv": "^8.2.0"
+    "dotenv": "^8.2.0",
+    "solidity-coverage": "^0.7.16"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
@@ -45,12 +46,12 @@
     "ethereum-waffle": "^3.3.0",
     "ethereumjs-util": "^6.2.0",
     "ethers": "^5.0.31",
-    "hardhat": "^2.0.11",
-    "hardhat-abi-exporter": "^2.0.8",
+    "hardhat": "^2.4.3",
+    "hardhat-abi-exporter": "^2.2.1",
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-dependency-compiler": "^1.1.1",
-    "hardhat-tracer": "^1.0.0-alpha.2",
-    "hardhat-typechain": "^0.3.4",
+    "hardhat-tracer": "^1.0.0-alpha.6",
+    "hardhat-typechain": "^0.3.5",
     "mocha": "^8.2.1",
     "ncp": "^2.0.0",
     "prettier": "^1.19.1",

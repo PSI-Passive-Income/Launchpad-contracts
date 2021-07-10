@@ -276,8 +276,8 @@
       }
     },
     "4298ae055afe98e470487cd5bfbac5485ca7cc932de2ce24a93574ea990916df": {
-      "address": "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
-      "txHash": "0xb70f9154db3a499442b411fdbcc4a3f149cd25d61d8e3e1e8f4fcdad9b04cd3d",
+      "address": "0x67d269191c92Caf3cD7723F116c85e6E9bf55933",
+      "txHash": "0xc0c010699ead58fdb1596f5a09a47666041cfbc4273da9541fb26547854ecd4c",
       "layout": {
         "storage": [
           {
@@ -331,7 +331,7 @@
           {
             "contract": "PSIPadTokenLockFactory",
             "label": "tokensLocked",
-            "type": "t_array(t_struct(LockingData)6876_storage)dyn_storage",
+            "type": "t_array(t_struct(LockingData)7824_storage)dyn_storage",
             "src": "contracts\\PSIPadTokenLockFactory.sol:29"
           },
           {
@@ -348,10 +348,10 @@
           "t_uint256": {
             "label": "uint256"
           },
-          "t_array(t_struct(LockingData)6876_storage)dyn_storage": {
+          "t_array(t_struct(LockingData)7824_storage)dyn_storage": {
             "label": "struct IPSIPadTokenLockFactory.LockingData[]"
           },
-          "t_struct(LockingData)6876_storage": {
+          "t_struct(LockingData)7824_storage": {
             "label": "struct IPSIPadTokenLockFactory.LockingData",
             "members": [
               {
@@ -402,9 +402,9 @@
         }
       }
     },
-    "a0a07e5828576cd151171c45374c575288f267cea631917b4881586a8490356f": {
+    "81eebea73f15d6c6064decbf144b668448c05c14a44bcf55569f79f4199fcf55": {
       "address": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
-      "txHash": "0xc4f160c4f275498c915dc99ea0cee248d84b7e8dfa9b35f7b69f88e56a23debb",
+      "txHash": "0xefd5484a7ee35fa3130e545f3d1801ee932a3908be6efe8c934e693d322e6aff",
       "layout": {
         "storage": [
           {
@@ -420,24 +420,85 @@
             "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:28"
           },
           {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:20"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:74"
+          },
+          {
             "contract": "PSIPadTokenDeployer",
             "label": "campaignFactory",
             "type": "t_address",
-            "src": "contracts\\PSIPadTokenDeployer.sol:12"
+            "src": "contracts\\PSIPadTokenDeployer.sol:21"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "fee_aggregator",
+            "type": "t_address",
+            "src": "contracts\\PSIPadTokenDeployer.sol:22"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "stable_coin",
+            "type": "t_address",
+            "src": "contracts\\PSIPadTokenDeployer.sol:23"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "stable_coin_fee",
+            "type": "t_uint256",
+            "src": "contracts\\PSIPadTokenDeployer.sol:24"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "tokenTypes",
+            "type": "t_mapping(t_enum(TokenType)7699,t_address)",
+            "src": "contracts\\PSIPadTokenDeployer.sol:26"
           },
           {
             "contract": "PSIPadTokenDeployer",
             "label": "tokens",
             "type": "t_array(t_address)dyn_storage",
-            "src": "contracts\\PSIPadTokenDeployer.sol:13"
+            "src": "contracts\\PSIPadTokenDeployer.sol:27"
           }
         ],
         "types": {
           "t_address": {
             "label": "address"
           },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_enum(TokenType)7699,t_address)": {
+            "label": "mapping(enum IPSIPadTokenDeployer.TokenType => address)"
+          },
+          "t_enum(TokenType)7699": {
+            "label": "enum IPSIPadTokenDeployer.TokenType",
+            "members": [
+              "Base",
+              "BaseAnySwap"
+            ]
+          },
           "t_array(t_address)dyn_storage": {
             "label": "address[]"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
           },
           "t_bool": {
             "label": "bool"
@@ -448,6 +509,6 @@
   },
   "admin": {
     "address": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
-    "txHash": "0x99422e8f011b508213e06dfc87b2d432562479ef51687ec30592b1ba9ca41a14"
+    "txHash": "0x88767da851a94cdf3006de4d6a62975c324c544bfed213173857edfb933f71a3"
   }
 }

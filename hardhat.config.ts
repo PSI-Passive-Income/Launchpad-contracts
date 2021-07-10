@@ -7,6 +7,7 @@ import 'hardhat-abi-exporter';
 import "hardhat-tracer";
 import "hardhat-dependency-compiler";
 import 'hardhat-contract-sizer';
+import "solidity-coverage";
 import '@openzeppelin/hardhat-upgrades';
 import "@nomiclabs/hardhat-etherscan";
 

@@ -6,8 +6,10 @@ import { expandTo18Decimals, TOTAL_SUPPLY } from './utilities'
 import { DPexRouter, DPexRouterPairs, DPexWETHWrapper, IBEP20, IWETH } from '@passive-income/dpex-peripheral/typechain'
 import { DPexFactory, DPexPairInitHash } from '@passive-income/dpex-swap-core/typechain'
 import { PSI, PSIGovernance, FeeAggregator } from '@passive-income/psi-contracts/typechain'
-import { PSIPadCampaignFactory, PSIPadTokenDeployer, PSIPadTokenLockFactory, TestBEP20 }  from '../../typechain';
+import { PSIPadCampaignFactory, PSIPadTokenDeployer, PSIPadTokenLockFactory, Token, TokenAnySwap, TestBEP20 }  from '../../typechain';
 
+import TokenAbi from '../../artifacts/contracts/token/Token.sol/Token.json'
+import TokenAnySwapAbi from '../../artifacts/contracts/token/TokenAnySwap.sol/TokenAnySwap.json'
 import TestBEP20Abi from '../../artifacts/contracts/test/TestBEP20.sol/TestBEP20.json'
 import WBNBAbi from '@passive-income/dpex-peripheral/artifacts/contracts/test/WBNB.sol/WBNB.json'
 import DPexPairInitHashAbi from '@passive-income/dpex-swap-core/artifacts/contracts/DPexPairInitHash.sol/DPexPairInitHash.json'
@@ -27,6 +29,8 @@ interface V2Fixture {
   psi: PSI
   token: IBEP20
   WETH: IWETH
+  baseToken: Token,
+  baseTokenAnySwap: TokenAnySwap,
   feeAggregator: FeeAggregator
   factory: DPexFactory
   router: DPexRouter
@@ -76,7 +80,12 @@ export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Prov
 
   // deploy PSIPadTokenDeployer
   const PSIPadTokenDeployer = await ethers.getContractFactory("PSIPadTokenDeployer");
-  const tokenDeployer =  await upgrades.deployProxy(PSIPadTokenDeployer, [campaignFactory.address], {initializer: 'initialize'}) as unknown as PSIPadTokenDeployer
+  const tokenDeployer =  await upgrades.deployProxy(PSIPadTokenDeployer, [campaignFactory.address, feeAggregator.address, WETH.address, expandTo18Decimals(0.2)], {initializer: 'initialize'}) as unknown as PSIPadTokenDeployer
+  
+  const baseToken = await waffle.deployContract(wallet, TokenAbi, [], overrides) as Token
+  const baseTokenAnySwap = await waffle.deployContract(wallet, TokenAnySwapAbi, [], overrides) as TokenAnySwap
+  await tokenDeployer.setTokenType(0, baseToken.address);
+  await tokenDeployer.setTokenType(1, baseTokenAnySwap.address);
 
   // deploy PSIPadTokenLockFactory
   const PSIPadTokenLockFactory = await ethers.getContractFactory("PSIPadTokenLockFactory");
@@ -86,6 +95,8 @@ export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Prov
     psi,
     token,
     WETH,
+    baseToken,
+    baseTokenAnySwap,
     feeAggregator,
     factory,
     router,
