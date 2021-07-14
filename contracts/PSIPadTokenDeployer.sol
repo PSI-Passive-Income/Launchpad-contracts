@@ -8,17 +8,14 @@ import '@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol';
 import './interfaces/IPSIPadTokenDeployer.sol';
-import './interfaces/IPSIPadCampaign.sol';
-import './interfaces/IPSIPadCampaignFactory.sol';
 import './interfaces/IFeeAggregator.sol';
 import './interfaces/token/IWETH.sol';
-import './token/Token.sol';
-import './token/TokenAnySwap.sol';
+import './token/interfaces/IToken.sol';
+import './token/interfaces/ITokenAnySwap.sol';
 
 contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
-    address public override campaignFactory;
     address public override fee_aggregator;
     address public override stable_coin; // WETH or WBNB
     uint256 public override stable_coin_fee; // fixed amount in bnb
@@ -27,20 +24,14 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
     address[] public override tokens;
 
     function initialize(
-        address _campaignFactory,
         address _fee_aggregator,
         address _stable_coin,
         uint256 _stable_coin_fee
     ) external initializer {
         super.__Ownable_init();
-        campaignFactory = _campaignFactory;
         fee_aggregator = _fee_aggregator;
         stable_coin = _stable_coin;
         stable_coin_fee = _stable_coin_fee;
-    }
-
-    function setCampaingFactory(address _campaignFactory) external override onlyOwner {
-        campaignFactory = _campaignFactory;
     }
 
     function setFeeAggregator(address _fee_aggregator) external override onlyOwner {
@@ -59,7 +50,7 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
         tokenTypes[tokenType] = implementation;
     }
 
-    function createTokenWithCampaign(TokenData calldata tokenData, IPSIPadCampaign.CampaignData calldata campaignData)
+    function createTokenWithCampaign(TokenData calldata tokenData)
         external
         payable
         override
@@ -70,12 +61,6 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
         transferFees(msg.value);
 
         token_address = createToken(tokenData);
-
-        IERC20Upgradeable(token_address).approve(
-            campaignFactory,
-            IERC20Upgradeable(token_address).balanceOf(address(this))
-        );
-        IPSIPadCampaignFactory(campaignFactory).createCampaignWithOwner(campaignData, _msgSender(), token_address, 0);
 
         IERC20Upgradeable(token_address).transfer(
             _msgSender(),
@@ -97,7 +82,7 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
         bytes32 salt = keccak256(abi.encodePacked(tokenData.name, _msgSender()));
         if (tokenData.crossChain) {
             token_address = ClonesUpgradeable.cloneDeterministic(tokenTypes[TokenType.BaseAnySwap], salt);
-            TokenAnySwap(token_address).initialize(
+            ITokenAnySwap(token_address).initialize(
                 tokenData.name,
                 tokenData.symbol,
                 tokenData.initialSupply,
@@ -110,7 +95,7 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
             );
         } else {
             token_address = ClonesUpgradeable.cloneDeterministic(tokenTypes[TokenType.Base], salt);
-            Token(token_address).initialize(
+            IToken(token_address).initialize(
                 tokenData.name,
                 tokenData.symbol,
                 tokenData.initialSupply,

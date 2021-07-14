@@ -331,7 +331,7 @@
           {
             "contract": "PSIPadTokenLockFactory",
             "label": "tokensLocked",
-            "type": "t_array(t_struct(LockingData)7824_storage)dyn_storage",
+            "type": "t_array(t_struct(LockingData)7757_storage)dyn_storage",
             "src": "contracts\\PSIPadTokenLockFactory.sol:29"
           },
           {
@@ -348,10 +348,10 @@
           "t_uint256": {
             "label": "uint256"
           },
-          "t_array(t_struct(LockingData)7824_storage)dyn_storage": {
+          "t_array(t_struct(LockingData)7757_storage)dyn_storage": {
             "label": "struct IPSIPadTokenLockFactory.LockingData[]"
           },
-          "t_struct(LockingData)7824_storage": {
+          "t_struct(LockingData)7757_storage": {
             "label": "struct IPSIPadTokenLockFactory.LockingData",
             "members": [
               {
@@ -402,9 +402,9 @@
         }
       }
     },
-    "81eebea73f15d6c6064decbf144b668448c05c14a44bcf55569f79f4199fcf55": {
+    "15556fab932e825272912741b5d26963d2aa9eb410642a38cb6b63f6c26b7076": {
       "address": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44",
-      "txHash": "0xefd5484a7ee35fa3130e545f3d1801ee932a3908be6efe8c934e693d322e6aff",
+      "txHash": "0x36f24c9fe1186d25a2af941bdb19f153cee8976e4e58b97deccf5d0b36b66cfd",
       "layout": {
         "storage": [
           {
@@ -439,39 +439,33 @@
           },
           {
             "contract": "PSIPadTokenDeployer",
-            "label": "campaignFactory",
-            "type": "t_address",
-            "src": "contracts\\PSIPadTokenDeployer.sol:21"
-          },
-          {
-            "contract": "PSIPadTokenDeployer",
             "label": "fee_aggregator",
             "type": "t_address",
-            "src": "contracts\\PSIPadTokenDeployer.sol:22"
+            "src": "contracts\\PSIPadTokenDeployer.sol:19"
           },
           {
             "contract": "PSIPadTokenDeployer",
             "label": "stable_coin",
             "type": "t_address",
-            "src": "contracts\\PSIPadTokenDeployer.sol:23"
+            "src": "contracts\\PSIPadTokenDeployer.sol:20"
           },
           {
             "contract": "PSIPadTokenDeployer",
             "label": "stable_coin_fee",
             "type": "t_uint256",
-            "src": "contracts\\PSIPadTokenDeployer.sol:24"
+            "src": "contracts\\PSIPadTokenDeployer.sol:21"
           },
           {
             "contract": "PSIPadTokenDeployer",
             "label": "tokenTypes",
-            "type": "t_mapping(t_enum(TokenType)7699,t_address)",
-            "src": "contracts\\PSIPadTokenDeployer.sol:26"
+            "type": "t_mapping(t_enum(TokenType)7645,t_address)",
+            "src": "contracts\\PSIPadTokenDeployer.sol:23"
           },
           {
             "contract": "PSIPadTokenDeployer",
             "label": "tokens",
             "type": "t_array(t_address)dyn_storage",
-            "src": "contracts\\PSIPadTokenDeployer.sol:27"
+            "src": "contracts\\PSIPadTokenDeployer.sol:24"
           }
         ],
         "types": {
@@ -481,10 +475,10 @@
           "t_uint256": {
             "label": "uint256"
           },
-          "t_mapping(t_enum(TokenType)7699,t_address)": {
+          "t_mapping(t_enum(TokenType)7645,t_address)": {
             "label": "mapping(enum IPSIPadTokenDeployer.TokenType => address)"
           },
-          "t_enum(TokenType)7699": {
+          "t_enum(TokenType)7645": {
             "label": "enum IPSIPadTokenDeployer.TokenType",
             "members": [
               "Base",

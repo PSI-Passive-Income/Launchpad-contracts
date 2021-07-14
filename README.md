@@ -10,7 +10,7 @@ This project is using [Hardhat](https://hardhat.org/getting-started/) for develo
 * Binance Test Chain
   * PSI : [0x066Bd99080eC62FE0E28bA687A53aC00794c17b6](https://testnet.bscscan.com/address/0x066Bd99080eC62FE0E28bA687A53aC00794c17b6)
   * PSIPadCampaignFactory : [0xBFf0D82794b1Fa4B031dD85A800340214C28CF84](https://testnet.bscscan.com/address/0xBFf0D82794b1Fa4B031dD85A800340214C28CF84)
-  * PSIPadTokenDeployer : [0xE534aF35D55fa10075883b65C502eDF48F7Ebe95](https://testnet.bscscan.com/address/0xE534aF35D55fa10075883b65C502eDF48F7Ebe95)
+  * PSIPadTokenDeployer : [0x69892baba78adda6b55a9008c36c56c8ccb3f3e9](https://testnet.bscscan.com/address/0x69892baba78adda6b55a9008c36c56c8ccb3f3e9)
     * Default Token : [0x0dA67cC8f76142797CaAbC37e9D1f950f40167A9](https://testnet.bscscan.com/address/0x0dA67cC8f76142797CaAbC37e9D1f950f40167A9)
     * Default Token AnySwap : [0x8f8a02E84BFBD6d8606f366549BF9217F6b52d16](https://testnet.bscscan.com/address/0x8f8a02E84BFBD6d8606f366549BF9217F6b52d16)
   * PSIPadTokenLockFactory : [0x964c5cA7Abb66f53e912f0E0d8F17eD0FBbB9042](https://testnet.bscscan.com/address/0x964c5cA7Abb66f53e912f0E0d8F17eD0FBbB9042)

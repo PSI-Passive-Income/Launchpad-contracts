@@ -80,7 +80,7 @@ export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Prov
 
   // deploy PSIPadTokenDeployer
   const PSIPadTokenDeployer = await ethers.getContractFactory("PSIPadTokenDeployer");
-  const tokenDeployer =  await upgrades.deployProxy(PSIPadTokenDeployer, [campaignFactory.address, feeAggregator.address, WETH.address, expandTo18Decimals(0.2)], {initializer: 'initialize'}) as unknown as PSIPadTokenDeployer
+  const tokenDeployer =  await upgrades.deployProxy(PSIPadTokenDeployer, [feeAggregator.address, WETH.address, expandTo18Decimals(0.2)], {initializer: 'initialize'}) as unknown as PSIPadTokenDeployer
   
   const baseToken = await waffle.deployContract(wallet, TokenAbi, [], overrides) as Token
   const baseTokenAnySwap = await waffle.deployContract(wallet, TokenAnySwapAbi, [], overrides) as TokenAnySwap

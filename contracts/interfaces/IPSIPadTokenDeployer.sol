@@ -23,8 +23,6 @@ interface IPSIPadTokenDeployer {
         address vault;
     }
 
-    function campaignFactory() external view returns (address);
-
     function fee_aggregator() external view returns (address);
 
     function stable_coin() external view returns (address);
@@ -37,8 +35,6 @@ interface IPSIPadTokenDeployer {
 
     event TokenCreated(address indexed owner, address token, string name, string symbol, uint256 totalSupply);
 
-    function setCampaingFactory(address _campaignFactory) external;
-
     function setFeeAggregator(address _fee_aggregator) external;
 
     function setStableCoin(address _stable_coin) external;
@@ -47,7 +43,7 @@ interface IPSIPadTokenDeployer {
 
     function setTokenType(TokenType tokenType, address implementation) external;
 
-    function createTokenWithCampaign(TokenData calldata tokenData, IPSIPadCampaign.CampaignData calldata campaignData)
+    function createTokenWithCampaign(TokenData calldata tokenData)
         external
         payable
         returns (address token_address);
