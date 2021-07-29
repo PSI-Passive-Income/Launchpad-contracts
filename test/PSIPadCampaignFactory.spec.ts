@@ -2,7 +2,7 @@ import chai, { expect } from 'chai'
 import { BigNumber } from 'ethers'
 import { ethers, waffle } from 'hardhat'
 
-import { expandTo18Decimals } from './shared/utilities'
+import { expandTo18Decimals, TOTAL_SUPPLY } from './shared/utilities'
 import { v2Fixture } from './shared/fixtures'
 
 import { DPexRouter, IWETH } from '@passive-income/dpex-peripheral/typechain'
@@ -107,7 +107,7 @@ describe('PSIPadCampaignFactory', () => {
     })
 
     it('Succeeds', async () => {
-      const expectedCampaignAddress = "0x73DB21674F208BE9a1449697e24f204430F74269"
+      const expectedCampaignAddress = "0x7c4Ddf347709C66BA58f9Cdcc140F95aaeCA4F99"
       
       await expect(campaignFactory.createCampaign(poolData, token.address, 0))
         .to.be.revertedWith("ERC20: transfer amount exceeds allowance")
@@ -401,12 +401,16 @@ describe('PSIPadCampaignFactory', () => {
 
       await expect(campaign.connect(user1).withdrawFunds()).to.be.revertedWith("PSIPadCampaign: CAMPAIGN_NOT_FAILED")
     })
-    it('Fails when not a participant', async () => {
+    it('Only gas used when not a participant', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
       await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(9.00) })
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
 
-      await expect(campaign.connect(user2).withdrawFunds()).to.be.revertedWith("PSIPadCampaign: NO_PARTICIPANT")
+      const balance = await provider.getBalance(user2.address);
+      const transaction = await campaign.connect(user2).withdrawFunds()
+      const receipt = await provider.getTransactionReceipt(transaction.hash);
+      const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
+      expect(await provider.getBalance(user2.address)).to.eq(balance.sub(etherUsed))
     })
     it('Succeeds when failed', async () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
@@ -441,6 +445,18 @@ describe('PSIPadCampaignFactory', () => {
       const receipt = await provider.getTransactionReceipt(transaction.hash);
       const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
       expect(await provider.getBalance(user1.address)).to.eq(balance.add(expandTo18Decimals(10)).sub(etherUsed))
+    })
+    it('Succeeds for owner when retrieving tokens when failed ', async () => {
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(9.00) })
+      await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
+
+      const balance = await provider.getBalance(owner.address);
+      const transaction = await campaign.connect(owner).withdrawFunds()
+      const receipt = await provider.getTransactionReceipt(transaction.hash);
+      const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
+      expect(await provider.getBalance(owner.address)).to.eq(balance.sub(etherUsed))
+      expect(await token.balanceOf(owner.address)).to.eq(TOTAL_SUPPLY)
     })
   })
 })

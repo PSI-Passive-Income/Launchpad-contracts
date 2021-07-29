@@ -72,7 +72,7 @@ describe('PSITokenDeployer', () => {
   })
 
   describe('Create campaign', async () => {
-    const expectedTokenAddress = "0x1C4f15B1fD292027582cdDCe7C2b730369b90eB8"
+    const expectedTokenAddress = "0xD2AAc7709Fe9DFC50b7C486A5DA67b01e6D22867"
 
     it('Fails when the fee is not payed', async () => {
       await expect(tokenDeployer.createTokenWithCampaign(tokenData)).to.be.revertedWith("PSIPadTokenDeployer: FEE_NOT_PAYED")

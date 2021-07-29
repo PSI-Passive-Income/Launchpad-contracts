@@ -484,6 +484,118 @@
           }
         }
       }
+    },
+    "0df0331c4173855d66bca0f175109f76c0acd5758e19b7f8f915d3d0f2a1c2f6": {
+      "address": "0xC0aDB23DEF0adB3D7c3044131e4354269Ba91370",
+      "txHash": "0x41829f0c2b74f4435ecada57ba303766c5b8b171acfff95f29c77086b04504fd",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:23"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:28"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:31"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:20"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:74"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "default_factory",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:21"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "default_router",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:22"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "fee_aggregator",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:23"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "stable_coin",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:25"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "stable_coin_fee",
+            "type": "t_uint256",
+            "src": "contracts\\PSIPadCampaignFactory.sol:26"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "token_fee",
+            "type": "t_uint256",
+            "src": "contracts\\PSIPadCampaignFactory.sol:27"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "campaigns",
+            "type": "t_array(t_address)dyn_storage",
+            "src": "contracts\\PSIPadCampaignFactory.sol:32"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "userCampaigns",
+            "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)",
+            "src": "contracts\\PSIPadCampaignFactory.sol:37"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(address => uint256[])"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
     }
   },
   "admin": {

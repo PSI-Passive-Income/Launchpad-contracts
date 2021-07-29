@@ -224,10 +224,16 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      */
     function withdrawFunds() external override {
         require(failed(), "PSIPadCampaign: CAMPAIGN_NOT_FAILED");
-        require(participants[msg.sender] > 0, "PSIPadCampaign: NO_PARTICIPANT");
-        uint256 withdrawAmount = participants[msg.sender];
-        participants[msg.sender] = 0;
-        payable(msg.sender).transfer(withdrawAmount);
+
+        if (msg.sender == owner() && IBEP20(token).balanceOf(address(this)) > 0) {
+            IERC20Upgradeable(token).safeTransfer(owner(), IBEP20(token).balanceOf(address(this)));
+        }
+
+        if (participants[msg.sender] > 0) {
+            uint256 withdrawAmount = participants[msg.sender];
+            participants[msg.sender] = 0;
+            payable(msg.sender).transfer(withdrawAmount);
+        }
     }  
 
     /**
