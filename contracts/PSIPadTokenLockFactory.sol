@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.6;
 pragma abicoder v2;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
@@ -27,6 +27,7 @@ contract PSIPadTokenLockFactory is IPSIPadTokenLockFactory, Initializable, Ownab
      * @notice All tokens locked
      */
     LockingData[] public tokensLocked;
+    
     /**
      * @notice Locks mapped on user's wallet address
      */

@@ -2,6 +2,7 @@
 .env
 
 abi
+bin
 artifacts
 build
 cache

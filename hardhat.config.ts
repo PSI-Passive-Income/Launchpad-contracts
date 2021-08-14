@@ -2,7 +2,7 @@ import { HardhatUserConfig } from "hardhat/types";
 
 // import "@nomiclabs/hardhat-ganache";
 import "@nomiclabs/hardhat-waffle";
-import "hardhat-typechain";
+import "@typechain/hardhat";
 import 'hardhat-abi-exporter';
 import "hardhat-tracer";
 import "hardhat-dependency-compiler";
@@ -12,6 +12,16 @@ import '@openzeppelin/hardhat-upgrades';
 import "@nomiclabs/hardhat-etherscan";
 
 require("dotenv").config({path: `${__dirname}/.env`});
+
+let typeChainTarget = process.env.TYPECHAIN_TARGET as "ethers-v5" | "web3-v1" | "truffle-v5"
+if (typeChainTarget !== "web3-v1" && typeChainTarget !==  "truffle-v5")
+  typeChainTarget = "ethers-v5";
+
+let typeChainOutDir = "typechain";
+if (typeChainTarget === "web3-v1") typeChainOutDir = "typechain-web3"
+if (typeChainTarget === "truffle-v5") typeChainOutDir = "typechain-truffle"
+
+console.log(typeChainTarget, typeChainOutDir)
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -47,7 +57,7 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       { 
-        version: "0.8.4",
+        version: "0.8.6",
         settings: {
           optimizer: {
             enabled: true,
@@ -76,7 +86,12 @@ const config: HardhatUserConfig = {
     alphaSort: false,
     runOnCompile: false,
     disambiguatePaths: false,
-  }  
+  },
+  typechain: {
+    outDir: typeChainOutDir,
+    target: typeChainTarget,
+    alwaysGenerateOverloads: true
+  }
 };
 
 export default config;

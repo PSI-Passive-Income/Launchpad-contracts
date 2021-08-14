@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.6;
 pragma abicoder v2;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -23,12 +23,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
     using SafeERC20Upgradeable for IERC20Upgradeable;
 
     address override public immutable psipad_factory;
-
-    address override public token;
-    CampaignData private data;
     
-    uint256 override public collected;
-
     address override public factory_address;
     address override public router_address;
     uint256 override public stable_coin_fee;
@@ -43,6 +38,20 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
     bool override public doRefund = false;
 
     mapping(address => uint) private participants;
+
+    address override public token;
+    uint256 override public softCap;
+    uint256 override public hardCap;
+    uint256 override public start_date;
+    uint256 override public end_date;
+    uint256 override public rate;
+    uint256 override public min_allowed;
+    uint256 override public max_allowed;
+    uint256 override public pool_rate;
+    uint256 override public lock_duration;
+    uint256 override public liquidity_rate;
+    
+    uint256 override public collected;
 
     constructor() {
         psipad_factory = msg.sender;
@@ -71,8 +80,17 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         super.__Ownable_init();
         transferOwnership(_owner);
 
-        data = _data;
         token = _token;
+        softCap = _data.softCap;
+        hardCap = _data.hardCap;
+        start_date = _data.start_date;
+        end_date = _data.end_date;
+        rate = _data.rate;
+        min_allowed = _data.min_allowed;
+        max_allowed = _data.max_allowed;
+        pool_rate = _data.pool_rate;
+        lock_duration = _data.lock_duration;
+        liquidity_rate = _data.liquidity_rate;
 
         factory_address = _factory_address;
         router_address = _router_address;
@@ -84,25 +102,18 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
     }
 
     /**
-     * return the campaign setup data
-     */
-    function getData() external override view returns(CampaignData memory) {
-        return data;
-    }
-
-    /**
      * @notice allows an participant to buy tokens (they can be claimed after the campaign succeeds)
      */
     function buyTokens() external override payable {
         require(isLive(), 'PSIPadCampaign: CAMPAIGN_NOT_LIVE');
-        require(msg.value >= data.min_allowed, 'PSIPadCampaign: BELOW_MIN_AMOUNT');
-        require(getGivenAmount(msg.sender).add(msg.value) <= data.max_allowed, 'PSIPadCampaign: ABOVE_MAX_AMOUNT');
+        require(msg.value >= min_allowed, 'PSIPadCampaign: BELOW_MIN_AMOUNT');
+        require(getGivenAmount(msg.sender).add(msg.value) <= max_allowed, 'PSIPadCampaign: ABOVE_MAX_AMOUNT');
         require((msg.value <= getRemaining()), 'PSIPadCampaign: CONTRACT_INSUFFICIENT_TOKENS');
 
         collected = (collected).add(msg.value);
 
         // finalize the campaign when hardcap is reached or minimum deposit is not possible anymore
-        if(collected >= data.hardCap || (data.hardCap - collected) < data.min_allowed) finalized = true;
+        if(collected >= hardCap || (hardCap - collected) < min_allowed) finalized = true;
         participants[msg.sender] = participants[msg.sender].add(msg.value);
 
         emit TokensBought(msg.sender, msg.value);
@@ -114,7 +125,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      */
     function lock() external override onlyPSIPadFactory {
         require(!locked, 'PSIPadCampaign: LIQUIDITY_ALREADY_LOCKED');
-        require(block.timestamp >= data.start_date, 'PSIPadCampaign: CAMPAIGN_NOT_STARTED');
+        require(block.timestamp >= start_date, 'PSIPadCampaign: CAMPAIGN_NOT_STARTED');
         require(!isLive(), 'PSIPadCampaign: CAMPAIGN_STILL_LIVE');
         require(!failed(), "PSIPadCampaign: CAMPAIGN_FAILED");
 
@@ -123,7 +134,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
 
         if (!doRefund) {
             locked = true;
-            unlock_date = (block.timestamp).add(data.lock_duration);
+            unlock_date = (block.timestamp).add(lock_duration);
 
             transferFees(tokenFee, stableFee);
 
@@ -132,7 +143,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
     }
     function calculateFees() internal view returns (uint256 tokenFee, uint256 stableFee) {
         if (feeTokens > 0) {
-            uint256 collectedPercentage = (collected.mul(1e18)).div(data.hardCap);
+            uint256 collectedPercentage = (collected.mul(1e18)).div(hardCap);
             tokenFee = (feeTokens.mul(collectedPercentage)).div(1e18);
         }
 
@@ -161,11 +172,11 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         
         if (lp_address == address(0) || IBEP20(lp_address).totalSupply() <= 0) {
             uint256 finalCollected = collected;
-            if (data.liquidity_rate + stable_coin_fee > 10000) finalCollected -= stableFee;
-            uint256 stableLiquidity = finalCollected.mul(data.liquidity_rate).div(10000);
+            if (liquidity_rate + stable_coin_fee > 10000) finalCollected -= stableFee;
+            uint256 stableLiquidity = finalCollected.mul(liquidity_rate).div(10000);
 
             if (stableLiquidity > 0) {
-                uint256 tokenLiquidity = (stableLiquidity.mul(data.pool_rate)).div(1e18);
+                uint256 tokenLiquidity = (stableLiquidity.mul(pool_rate)).div(1e18);
                 IBEP20(token).approve(router_address, tokenLiquidity);
                 IPSIPadRouter(router_address).addLiquidityETH{value : stableLiquidity} (
                     address(token),
@@ -240,8 +251,8 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * @notice Check whether the campaign is still live
      */
     function isLive() public override view returns(bool) {
-        if ((block.timestamp < data.start_date)) return false;
-        if ((block.timestamp >= data.end_date)) return false;
+        if ((block.timestamp < start_date)) return false;
+        if ((block.timestamp >= end_date)) return false;
         if (finalized) return false;
         return true;
     }
@@ -249,20 +260,20 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      * @notice Check whether the campaign failed
      */
     function failed() public override view returns(bool){
-        return ((block.timestamp >= data.end_date) && data.softCap > collected) || doRefund;
+        return ((block.timestamp >= end_date) && softCap > collected) || doRefund;
     }
 
     /**
      * @notice Returns amount in XYZ
      */
     function calculateAmount(uint256 _amount) public override view returns(uint256){
-        return (_amount.mul(data.rate)).div(1e18);
+        return (_amount.mul(rate)).div(1e18);
     }
     /**
      * @notice Get remaining tokens not sold
      */
     function getRemaining() public override view returns (uint256){
-        return (data.hardCap).sub(collected);
+        return (hardCap).sub(collected);
     }
     /**
      * Get an participant's contribution

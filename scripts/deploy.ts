@@ -40,30 +40,30 @@ const main = async() => {
 
   console.log("deploying");
 
-  const campaignFactory = new ethers.Contract("0xBFf0D82794b1Fa4B031dD85A800340214C28CF84", PSIPadCampaignFactoryAbi, signer) as PSIPadCampaignFactory; // bsc test
+  const campaignFactory = new ethers.Contract("0xB390E793a90ADDD68eE92F6AC6c3BAcba06DfF78", PSIPadCampaignFactoryAbi, signer) as PSIPadCampaignFactory; // bsc test
   // const PSIPadCampaignFactory = await ethers.getContractFactory("PSIPadCampaignFactory");
   // const campaignFactory: PSIPadCampaignFactory = await upgrades.deployProxy(PSIPadCampaignFactory, [factory, router, feeAggregator, baseContract, 100, 50], { initializer: 'initialize' }) as PSIPadCampaignFactory;
   // await campaignFactory.deployed();
   // console.log("PSIPadCampaignFactory deployed to:", campaignFactory.address);
 
-  const PSIPadTokenDeployer = await ethers.getContractFactory("PSIPadTokenDeployer");
-  const tokenDeployer: PSIPadTokenDeployer = await upgrades.deployProxy(PSIPadTokenDeployer, [feeAggregator, baseContract, ethers.utils.parseUnits("0.2", 18)], { initializer: 'initialize' }) as PSIPadTokenDeployer;
-  await tokenDeployer.deployed();
-  console.log("PSIPadTokenDeployer deployed to:", tokenDeployer.address);
+  // const PSIPadTokenDeployer = await ethers.getContractFactory("PSIPadTokenDeployer");
+  // const tokenDeployer: PSIPadTokenDeployer = await upgrades.deployProxy(PSIPadTokenDeployer, [feeAggregator, baseContract, ethers.utils.parseUnits("0.2", 18)], { initializer: 'initialize' }) as PSIPadTokenDeployer;
+  // await tokenDeployer.deployed();
+  // console.log("PSIPadTokenDeployer deployed to:", tokenDeployer.address);
 
-  const baseToken = new ethers.Contract("0x0dA67cC8f76142797CaAbC37e9D1f950f40167A9", TokenAbi, signer) as Token; // bsc test
-  // const Token = await ethers.getContractFactory("Token");
-  // const baseToken = await Token.connect(signer).deploy() as Token;
-  // await baseToken.deployed();
-  console.log("Token deployed to:", baseToken.address);
-  const baseTokenAnySwap = new ethers.Contract("0x8f8a02E84BFBD6d8606f366549BF9217F6b52d16", TokenAnySwapAbi, signer) as TokenAnySwap; // bsc test
-  // const TokenAnySwap = await ethers.getContractFactory("TokenAnySwap");
-  // const baseTokenAnySwap = await TokenAnySwap.connect(signer).deploy() as TokenAnySwap;
-  // await baseTokenAnySwap.deployed();
-  console.log("TokenAnySwap deployed to:", baseTokenAnySwap.address);
-  await tokenDeployer.setTokenType(0, baseToken.address);
-  await tokenDeployer.setTokenType(1, baseTokenAnySwap.address);
-  console.log("Base tokens set");
+  // const baseToken = new ethers.Contract("0x0dA67cC8f76142797CaAbC37e9D1f950f40167A9", TokenAbi, signer) as Token; // bsc test
+  // // const Token = await ethers.getContractFactory("Token");
+  // // const baseToken = await Token.connect(signer).deploy() as Token;
+  // // await baseToken.deployed();
+  // console.log("Token deployed to:", baseToken.address);
+  // const baseTokenAnySwap = new ethers.Contract("0x8f8a02E84BFBD6d8606f366549BF9217F6b52d16", TokenAnySwapAbi, signer) as TokenAnySwap; // bsc test
+  // // const TokenAnySwap = await ethers.getContractFactory("TokenAnySwap");
+  // // const baseTokenAnySwap = await TokenAnySwap.connect(signer).deploy() as TokenAnySwap;
+  // // await baseTokenAnySwap.deployed();
+  // console.log("TokenAnySwap deployed to:", baseTokenAnySwap.address);
+  // await tokenDeployer.setTokenType(0, baseToken.address);
+  // await tokenDeployer.setTokenType(1, baseTokenAnySwap.address);
+  // console.log("Base tokens set");
 
   // const PSIPadTokenLockFactory = await ethers.getContractFactory("PSIPadTokenLockFactory");
   // const tokenLockFactory: PSIPadTokenLockFactory = await upgrades.deployProxy(PSIPadTokenLockFactory, [feeAggregator, baseContract, ethers.utils.parseUnits("0.2", 18)], { initializer: 'initialize' }) as PSIPadTokenLockFactory;

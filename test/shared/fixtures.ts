@@ -42,7 +42,7 @@ interface V2Fixture {
 export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Provider): Promise<V2Fixture> {
   // deploy tokens
   const psi = await waffle.deployContract(wallet, PSIAbi, [], overrides) as unknown as PSI
-  const token = await waffle.deployContract(wallet, TestBEP20Abi, [TOTAL_SUPPLY], overrides) as unknown as TestBEP20
+  const token = await waffle.deployContract(wallet, TestBEP20Abi, [TOTAL_SUPPLY], overrides) as unknown as IBEP20
   const WETH = await waffle.deployContract(wallet, WBNBAbi, [], overrides) as unknown as IWETH
 
   // deploy factory

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.6;
 
 interface IPSIPadCampaign {
     struct CampaignData {
@@ -18,10 +18,6 @@ interface IPSIPadCampaign {
 
     function psipad_factory() external view returns(address);
 
-    function getData() external view returns(CampaignData memory);
-    function token() external view returns(address);
-    function collected() external view returns(uint256);
-
     function factory_address() external view returns(address);
     function router_address() external view returns(address);
     function stable_coin_fee() external view returns(uint256);
@@ -34,6 +30,19 @@ interface IPSIPadCampaign {
     function finalized() external view returns(bool);
     function locked() external view returns(bool);
     function doRefund() external view returns(bool);
+
+    function token() external view returns(address);
+    function softCap() external view returns(uint256);
+    function hardCap() external view returns(uint256);
+    function start_date() external view returns(uint256);
+    function end_date() external view returns(uint256);
+    function rate() external view returns(uint256);
+    function min_allowed() external view returns(uint256);
+    function max_allowed() external view returns(uint256);
+    function pool_rate() external view returns(uint256);
+    function lock_duration() external view returns(uint256);
+    function liquidity_rate() external view returns(uint256);
+    function collected() external view returns(uint256);
 
     event Initialized(address indexed owner);
     event TokensBought(address indexed user, uint256 value);

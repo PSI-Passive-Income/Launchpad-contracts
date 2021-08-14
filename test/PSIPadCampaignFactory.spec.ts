@@ -107,7 +107,7 @@ describe('PSIPadCampaignFactory', () => {
     })
 
     it('Succeeds', async () => {
-      const expectedCampaignAddress = "0x7c4Ddf347709C66BA58f9Cdcc140F95aaeCA4F99"
+      const expectedCampaignAddress = "0x8E7826cF045718aD59FB7cD22938C1115A2DBA98"
       
       await expect(campaignFactory.createCampaign(poolData, token.address, 0))
         .to.be.revertedWith("ERC20: transfer amount exceeds allowance")
@@ -407,9 +407,8 @@ describe('PSIPadCampaignFactory', () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
 
       const balance = await provider.getBalance(user2.address);
-      const transaction = await campaign.connect(user2).withdrawFunds()
-      const receipt = await provider.getTransactionReceipt(transaction.hash);
-      const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
+      const receipt = await (await campaign.connect(user2).withdrawFunds()).wait()
+      const etherUsed = receipt.effectiveGasPrice.mul(receipt.gasUsed)
       expect(await provider.getBalance(user2.address)).to.eq(balance.sub(etherUsed))
     })
     it('Succeeds when failed', async () => {
@@ -418,9 +417,8 @@ describe('PSIPadCampaignFactory', () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
 
       const balance = await provider.getBalance(user1.address);
-      const transaction = await campaign.connect(user1).withdrawFunds()
-      const receipt = await provider.getTransactionReceipt(transaction.hash);
-      const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
+      const receipt = await (await campaign.connect(user1).withdrawFunds()).wait()
+      const etherUsed = receipt.effectiveGasPrice.mul(receipt.gasUsed)
       expect(await provider.getBalance(user1.address)).to.eq(balance.add(expandTo18Decimals(9)).sub(etherUsed))
     })
     it('Succeeds when refunded', async () => {
@@ -441,9 +439,8 @@ describe('PSIPadCampaignFactory', () => {
       await campaignFactory.lock(0)
       
       const balance = await provider.getBalance(user1.address);
-      const transaction = await campaign.connect(user1).withdrawFunds()
-      const receipt = await provider.getTransactionReceipt(transaction.hash);
-      const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
+      const receipt = await (await campaign.connect(user1).withdrawFunds()).wait()
+      const etherUsed = receipt.effectiveGasPrice.mul(receipt.gasUsed)
       expect(await provider.getBalance(user1.address)).to.eq(balance.add(expandTo18Decimals(10)).sub(etherUsed))
     })
     it('Succeeds for owner when retrieving tokens when failed ', async () => {
@@ -452,9 +449,8 @@ describe('PSIPadCampaignFactory', () => {
       await provider.send("evm_setNextBlockTimestamp", [poolData.end_date + 1])
 
       const balance = await provider.getBalance(owner.address);
-      const transaction = await campaign.connect(owner).withdrawFunds()
-      const receipt = await provider.getTransactionReceipt(transaction.hash);
-      const etherUsed = transaction.gasPrice.mul(receipt.gasUsed)
+      const receipt = await (await campaign.connect(owner).withdrawFunds()).wait()
+      const etherUsed = receipt.effectiveGasPrice.mul(receipt.gasUsed)
       expect(await provider.getBalance(owner.address)).to.eq(balance.sub(etherUsed))
       expect(await token.balanceOf(owner.address)).to.eq(TOTAL_SUPPLY)
     })

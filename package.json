@@ -1,6 +1,6 @@
 {
   "name": "@passive-income/launchpad-contracts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Smart contracts for the PSI Launchpad",
   "engines": {
     "node": ">=10"
@@ -17,7 +17,8 @@
     "abi",
     "artifacts",
     "contracts",
-    "typechain"
+    "typechain",
+    "typechain-web3"
   ],
   "dependencies": {
     "@openzeppelin/contracts": "^4.1.0",
@@ -26,9 +27,11 @@
     "@passive-income/dpex-peripheral": "~1.1.9",
     "@passive-income/psi-contracts": "~1.0.10",
     "@truffle/hdwallet-provider": "^1.2.1",
+    "@typechain/hardhat": "^2.3.0",
     "@uniswap/lib": "1.1.1",
     "dotenv": "^8.2.0",
-    "solidity-coverage": "^0.7.16"
+    "solidity-coverage": "^0.7.16",
+    "typechain": "5.1.2"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
@@ -37,12 +40,14 @@
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/hardhat-upgrades": "^1.5.0",
     "@openzeppelin/truffle-upgrades": "^1.4.0",
-    "@typechain/ethers-v5": "^5.0.0",
+    "@typechain/ethers-v5": "^7.0.1",
+    "@typechain/web3-v1": "^3.0.0",
     "@types/chai": "^4.2.14",
     "@types/mocha": "^8.2.0",
     "@types/node": "^14.14.21",
     "axios": "^0.21.1",
     "chai": "^4.2.0",
+    "cross-env": "^7.0.3",
     "ethereum-waffle": "^3.3.0",
     "ethereumjs-util": "^6.2.0",
     "ethers": "^5.0.31",
@@ -51,14 +56,12 @@
     "hardhat-contract-sizer": "^2.0.3",
     "hardhat-dependency-compiler": "^1.1.1",
     "hardhat-tracer": "^1.0.0-alpha.6",
-    "hardhat-typechain": "^0.3.5",
     "mocha": "^8.2.1",
     "ncp": "^2.0.0",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.0",
-    "solc": "^0.8.4",
+    "solc": "0.8.6",
     "ts-node": "^9.1.1",
-    "typechain": "^4.0.1",
     "typescript": "^4.1.3"
   },
   "scripts": {
@@ -69,7 +72,11 @@
     "compile": "hardhat compile",
     "pretest": "yarn compile",
     "test": "hardhat test",
-    "prepublishOnly": "yarn test"
+    "prepublishOnly": "yarn test",
+    "web3types": "cross-env \"TYPECHAIN_TARGET=web3-v1\" hardhat typechain"
+  },
+  "resolutions": {
+    "solc": "0.8.6"
   },
   "license": "GPL-3.0-or-later"
 }
