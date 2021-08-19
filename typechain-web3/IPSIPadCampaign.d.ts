@@ -57,6 +57,8 @@ export interface IPSIPadCampaign extends BaseContract {
 
     doRefund(): NonPayableTransactionObject<boolean>;
 
+    end_date(): NonPayableTransactionObject<string>;
+
     factory_address(): NonPayableTransactionObject<string>;
 
     failed(): NonPayableTransactionObject<boolean>;
@@ -65,40 +67,43 @@ export interface IPSIPadCampaign extends BaseContract {
 
     finalized(): NonPayableTransactionObject<boolean>;
 
-    getData(): NonPayableTransactionObject<
-      [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string
-      ]
-    >;
-
     getGivenAmount(_address: string): NonPayableTransactionObject<string>;
 
     getRemaining(): NonPayableTransactionObject<string>;
 
+    hardCap(): NonPayableTransactionObject<string>;
+
     isLive(): NonPayableTransactionObject<boolean>;
 
+    liquidity_rate(): NonPayableTransactionObject<string>;
+
     lock(): NonPayableTransactionObject<void>;
+
+    lock_duration(): NonPayableTransactionObject<string>;
 
     locked(): NonPayableTransactionObject<boolean>;
 
     lp_address(): NonPayableTransactionObject<string>;
 
+    max_allowed(): NonPayableTransactionObject<string>;
+
+    min_allowed(): NonPayableTransactionObject<string>;
+
+    pool_rate(): NonPayableTransactionObject<string>;
+
     psipad_factory(): NonPayableTransactionObject<string>;
+
+    rate(): NonPayableTransactionObject<string>;
 
     router_address(): NonPayableTransactionObject<string>;
 
     setLPAddress(_lp_address: string): NonPayableTransactionObject<void>;
 
+    softCap(): NonPayableTransactionObject<string>;
+
     stable_coin_fee(): NonPayableTransactionObject<string>;
+
+    start_date(): NonPayableTransactionObject<string>;
 
     token(): NonPayableTransactionObject<string>;
 

@@ -63,6 +63,8 @@ export interface PSIPadCampaign extends BaseContract {
 
     doRefund(): NonPayableTransactionObject<boolean>;
 
+    end_date(): NonPayableTransactionObject<string>;
+
     factory_address(): NonPayableTransactionObject<string>;
 
     failed(): NonPayableTransactionObject<boolean>;
@@ -71,24 +73,11 @@ export interface PSIPadCampaign extends BaseContract {
 
     finalized(): NonPayableTransactionObject<boolean>;
 
-    getData(): NonPayableTransactionObject<
-      [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string
-      ]
-    >;
-
     getGivenAmount(_address: string): NonPayableTransactionObject<string>;
 
     getRemaining(): NonPayableTransactionObject<string>;
+
+    hardCap(): NonPayableTransactionObject<string>;
 
     initialize(
       _data: [
@@ -114,15 +103,27 @@ export interface PSIPadCampaign extends BaseContract {
 
     isLive(): NonPayableTransactionObject<boolean>;
 
+    liquidity_rate(): NonPayableTransactionObject<string>;
+
     lock(): NonPayableTransactionObject<void>;
+
+    lock_duration(): NonPayableTransactionObject<string>;
 
     locked(): NonPayableTransactionObject<boolean>;
 
     lp_address(): NonPayableTransactionObject<string>;
 
+    max_allowed(): NonPayableTransactionObject<string>;
+
+    min_allowed(): NonPayableTransactionObject<string>;
+
     owner(): NonPayableTransactionObject<string>;
 
+    pool_rate(): NonPayableTransactionObject<string>;
+
     psipad_factory(): NonPayableTransactionObject<string>;
+
+    rate(): NonPayableTransactionObject<string>;
 
     renounceOwnership(): NonPayableTransactionObject<void>;
 
@@ -130,7 +131,11 @@ export interface PSIPadCampaign extends BaseContract {
 
     setLPAddress(_lp_address: string): NonPayableTransactionObject<void>;
 
+    softCap(): NonPayableTransactionObject<string>;
+
     stable_coin_fee(): NonPayableTransactionObject<string>;
+
+    start_date(): NonPayableTransactionObject<string>;
 
     token(): NonPayableTransactionObject<string>;
 

@@ -48,7 +48,7 @@ export interface PSIPadTokenDeployer extends BaseContract {
   ): PSIPadTokenDeployer;
   clone(): PSIPadTokenDeployer;
   methods: {
-    createTokenWithCampaign(
+    createToken(
       tokenData: [
         string,
         string,
@@ -64,6 +64,8 @@ export interface PSIPadTokenDeployer extends BaseContract {
     ): PayableTransactionObject<string>;
 
     fee_aggregator(): NonPayableTransactionObject<string>;
+
+    getUserTokens(creator: string): NonPayableTransactionObject<string[]>;
 
     initialize(
       _fee_aggregator: string,
@@ -99,6 +101,11 @@ export interface PSIPadTokenDeployer extends BaseContract {
     tokens(arg0: number | string | BN): NonPayableTransactionObject<string>;
 
     transferOwnership(newOwner: string): NonPayableTransactionObject<void>;
+
+    userTokens(
+      arg0: string,
+      arg1: number | string | BN
+    ): NonPayableTransactionObject<string>;
   };
   events: {
     OwnershipTransferred(cb?: Callback<OwnershipTransferred>): EventEmitter;

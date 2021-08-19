@@ -107,9 +107,7 @@ export interface PSIPadTokenLockFactory extends BaseContract {
 
     stable_coin_fee(): NonPayableTransactionObject<string>;
 
-    tokensLocked(
-      arg0: number | string | BN
-    ): NonPayableTransactionObject<{
+    tokensLocked(arg0: number | string | BN): NonPayableTransactionObject<{
       owner: string;
       token: string;
       amount: string;

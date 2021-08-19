@@ -33,6 +33,8 @@ interface IPSIPadTokenDeployer {
 
     function tokens(uint256 idx) external view returns (address);
 
+    function getUserTokens(address account) external view returns (address[] memory);
+
     event TokenCreated(address indexed owner, address token, string name, string symbol, uint256 totalSupply);
 
     function setFeeAggregator(address _fee_aggregator) external;
@@ -43,7 +45,7 @@ interface IPSIPadTokenDeployer {
 
     function setTokenType(TokenType tokenType, address implementation) external;
 
-    function createTokenWithCampaign(TokenData calldata tokenData)
+    function createToken(TokenData calldata tokenData)
         external
         payable
         returns (address token_address);

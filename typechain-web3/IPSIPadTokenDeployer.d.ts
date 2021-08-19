@@ -42,7 +42,7 @@ export interface IPSIPadTokenDeployer extends BaseContract {
   ): IPSIPadTokenDeployer;
   clone(): IPSIPadTokenDeployer;
   methods: {
-    createTokenWithCampaign(
+    createToken(
       tokenData: [
         string,
         string,
@@ -58,6 +58,8 @@ export interface IPSIPadTokenDeployer extends BaseContract {
     ): PayableTransactionObject<string>;
 
     fee_aggregator(): NonPayableTransactionObject<string>;
+
+    getUserTokens(account: string): NonPayableTransactionObject<string[]>;
 
     setFeeAggregator(
       _fee_aggregator: string

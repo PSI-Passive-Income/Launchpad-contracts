@@ -22,6 +22,7 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
 
     mapping(TokenType => address) public override tokenTypes;
     address[] public override tokens;
+    mapping(address => address[]) public userTokens;
 
     function initialize(
         address _fee_aggregator,
@@ -32,6 +33,10 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
         fee_aggregator = _fee_aggregator;
         stable_coin = _stable_coin;
         stable_coin_fee = _stable_coin_fee;
+    }
+
+    function getUserTokens(address creator) external override view returns(address[] memory) {
+        return userTokens[creator];
     }
 
     function setFeeAggregator(address _fee_aggregator) external override onlyOwner {
@@ -50,7 +55,7 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
         tokenTypes[tokenType] = implementation;
     }
 
-    function createTokenWithCampaign(TokenData calldata tokenData)
+    function createToken(TokenData calldata tokenData)
         external
         payable
         override
@@ -60,13 +65,14 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
 
         transferFees(msg.value);
 
-        token_address = createToken(tokenData);
+        token_address = _createToken(tokenData);
 
         IERC20Upgradeable(token_address).transfer(
             _msgSender(),
             IERC20Upgradeable(token_address).balanceOf(address(this))
         );
         tokens.push(token_address);
+        userTokens[_msgSender()].push(token_address);
         return token_address;
     }
 
@@ -78,7 +84,7 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
         }
     }
 
-    function createToken(TokenData calldata tokenData) internal returns (address token_address) {
+    function _createToken(TokenData calldata tokenData) internal returns (address token_address) {
         bytes32 salt = keccak256(abi.encodePacked(tokenData.name, _msgSender()));
         if (tokenData.crossChain) {
             token_address = ClonesUpgradeable.cloneDeterministic(tokenTypes[TokenType.BaseAnySwap], salt);

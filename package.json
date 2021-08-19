@@ -1,6 +1,6 @@
 {
   "name": "@passive-income/launchpad-contracts",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Smart contracts for the PSI Launchpad",
   "engines": {
     "node": ">=10"

@@ -719,6 +719,113 @@
           }
         }
       }
+    },
+    "468363c6efd076415e2c3d1fd127bc78fea0a6d83157905ab324314d333907d1": {
+      "address": "0xb2d9A53D68ABfC0aCC140D47e811d5cA8fae3b22",
+      "txHash": "0xbc25f7efdbd70f7ab4fe30147f3ed1c48c22eebf51b2870fca6211daedeec6ca",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:26"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:77"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "fee_aggregator",
+            "type": "t_address",
+            "src": "contracts\\PSIPadTokenDeployer.sol:19"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "stable_coin",
+            "type": "t_address",
+            "src": "contracts\\PSIPadTokenDeployer.sol:20"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "stable_coin_fee",
+            "type": "t_uint256",
+            "src": "contracts\\PSIPadTokenDeployer.sol:21"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "tokenTypes",
+            "type": "t_mapping(t_enum(TokenType)7853,t_address)",
+            "src": "contracts\\PSIPadTokenDeployer.sol:23"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "tokens",
+            "type": "t_array(t_address)dyn_storage",
+            "src": "contracts\\PSIPadTokenDeployer.sol:24"
+          },
+          {
+            "contract": "PSIPadTokenDeployer",
+            "label": "userTokens",
+            "type": "t_mapping(t_address,t_array(t_address)dyn_storage)",
+            "src": "contracts\\PSIPadTokenDeployer.sol:25"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_mapping(t_enum(TokenType)7853,t_address)": {
+            "label": "mapping(enum IPSIPadTokenDeployer.TokenType => address)"
+          },
+          "t_enum(TokenType)7853": {
+            "label": "enum IPSIPadTokenDeployer.TokenType",
+            "members": [
+              "Base",
+              "BaseAnySwap"
+            ]
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_address,t_array(t_address)dyn_storage)": {
+            "label": "mapping(address => address[])"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          },
+          "t_bool": {
+            "label": "bool"
+          }
+        }
+      }
     }
   }
 }

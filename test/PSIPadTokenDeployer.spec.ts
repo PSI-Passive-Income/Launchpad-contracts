@@ -75,11 +75,11 @@ describe('PSITokenDeployer', () => {
     const expectedTokenAddress = "0xD2AAc7709Fe9DFC50b7C486A5DA67b01e6D22867"
 
     it('Fails when the fee is not payed', async () => {
-      await expect(tokenDeployer.createTokenWithCampaign(tokenData)).to.be.revertedWith("PSIPadTokenDeployer: FEE_NOT_PAYED")
+      await expect(tokenDeployer.createToken(tokenData)).to.be.revertedWith("PSIPadTokenDeployer: FEE_NOT_PAYED")
     })
 
     it('Succeeds', async () => {
-      await expect(tokenDeployer.createTokenWithCampaign(tokenData, { value: expandTo18Decimals(0.2) }))
+      await expect(tokenDeployer.createToken(tokenData, { value: expandTo18Decimals(0.2) }))
         .to.emit(tokenDeployer, 'TokenCreated')
         .withArgs(owner.address, expectedTokenAddress, tokenData.name, tokenData.symbol, tokenData.initialSupply)
 
