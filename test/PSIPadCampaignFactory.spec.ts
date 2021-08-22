@@ -107,7 +107,7 @@ describe('PSIPadCampaignFactory', () => {
     })
 
     it('Succeeds', async () => {
-      const expectedCampaignAddress = "0xE68E0Cb2d7b2dE479B3C5A4BB90A44A712e09218"
+      const expectedCampaignAddress = "0x56639dB16Ac50A89228026e42a316B30179A5376"
       
       await expect(campaignFactory.createCampaign(poolData, token.address, 0))
         .to.be.revertedWith("ERC20: transfer amount exceeds allowance")

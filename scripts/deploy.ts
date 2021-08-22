@@ -8,6 +8,7 @@ import { PSIPadCampaignFactory, PSIPadTokenDeployer, PSIPadTokenLockFactory, Tok
 import PSIPadCampaignFactoryAbi from '../abi/contracts/PSIPadCampaignFactory.sol/PSIPadCampaignFactory.json'
 import PSIPadTokenDeployerAbi from '../abi/contracts/PSIPadTokenDeployer.sol/PSIPadTokenDeployer.json'
 import PSIPadTokenLockFactoryAbi from '../abi/contracts/PSIPadTokenLockFactory.sol/PSIPadTokenLockFactory.json'
+import PSIPadCampaignAbi from '../abi/contracts/PSIPadCampaign.sol/PSIPadCampaign.json'
 import TokenAbi from '../abi/contracts/token/Token.sol/Token.json'
 import TokenAnySwapAbi from '../abi/contracts/token/TokenAnySwap.sol/TokenAnySwap.json'
 import { BigNumber } from "@ethersproject/bignumber";

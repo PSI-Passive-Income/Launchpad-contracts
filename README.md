@@ -10,6 +10,7 @@ This project is using [Hardhat](https://hardhat.org/getting-started/) for develo
 * Binance Test Chain
   * PSI : [0x066Bd99080eC62FE0E28bA687A53aC00794c17b6](https://testnet.bscscan.com/address/0x066Bd99080eC62FE0E28bA687A53aC00794c17b6)
   * PSIPadCampaignFactory : [0xB390E793a90ADDD68eE92F6AC6c3BAcba06DfF78](https://testnet.bscscan.com/address/0xB390E793a90ADDD68eE92F6AC6c3BAcba06DfF78)
+    * Default Campaign : [0xd1Fca24b40C8D633885Fa195A90491799a8E15c1](https://testnet.bscscan.com/address/0xd1Fca24b40C8D633885Fa195A90491799a8E15c1)
   * PSIPadTokenDeployer : [0x69892baba78adda6b55a9008c36c56c8ccb3f3e9](https://testnet.bscscan.com/address/0x69892baba78adda6b55a9008c36c56c8ccb3f3e9)
     * Default Token : [0x0dA67cC8f76142797CaAbC37e9D1f950f40167A9](https://testnet.bscscan.com/address/0x0dA67cC8f76142797CaAbC37e9D1f950f40167A9)
     * Default Token AnySwap : [0x8f8a02E84BFBD6d8606f366549BF9217F6b52d16](https://testnet.bscscan.com/address/0x8f8a02E84BFBD6d8606f366549BF9217F6b52d16)

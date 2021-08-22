@@ -6,8 +6,9 @@ import { expandTo18Decimals, TOTAL_SUPPLY } from './utilities'
 import { DPexRouter, DPexRouterPairs, DPexWETHWrapper, IBEP20, IWETH } from '@passive-income/dpex-peripheral/typechain'
 import { DPexFactory, DPexPairInitHash } from '@passive-income/dpex-swap-core/typechain'
 import { PSI, PSIGovernance, FeeAggregator } from '@passive-income/psi-contracts/typechain'
-import { PSIPadCampaignFactory, PSIPadTokenDeployer, PSIPadTokenLockFactory, Token, TokenAnySwap, TestBEP20 }  from '../../typechain';
+import { PSIPadCampaign, PSIPadCampaignFactory, PSIPadTokenDeployer, PSIPadTokenLockFactory, Token, TokenAnySwap, TestBEP20 }  from '../../typechain';
 
+import PSIPadCampaignAbi from '../../artifacts/contracts/PSIPadCampaign.sol/PSIPadCampaign.json'
 import TokenAbi from '../../artifacts/contracts/token/Token.sol/Token.json'
 import TokenAnySwapAbi from '../../artifacts/contracts/token/TokenAnySwap.sol/TokenAnySwap.json'
 import TestBEP20Abi from '../../artifacts/contracts/test/TestBEP20.sol/TestBEP20.json'
@@ -74,8 +75,10 @@ export async function v2Fixture([wallet]: Wallet[], provider: providers.Web3Prov
   await router.setWETHWrapper(WETHWrapper.address)
 
   // deploy PSIPadCampaignFactory
+  const baseCampaign = await waffle.deployContract(wallet, PSIPadCampaignAbi, [], overrides) as PSIPadCampaign
+
   const PSIPadCampaignFactory = await ethers.getContractFactory("PSIPadCampaignFactory")
-  const campaignFactory =  await upgrades.deployProxy(PSIPadCampaignFactory, [factory.address, router.address, feeAggregator.address, WETH.address, 100, 50], {initializer: 'initialize'}) as unknown as PSIPadCampaignFactory
+  const campaignFactory =  await upgrades.deployProxy(PSIPadCampaignFactory, [factory.address, router.address, feeAggregator.address, WETH.address, 100, 50, baseCampaign.address], {initializer: 'initialize'}) as unknown as PSIPadCampaignFactory
   await governance.setGovernanceLevel(campaignFactory.address, 50)
 
   // deploy PSIPadTokenDeployer

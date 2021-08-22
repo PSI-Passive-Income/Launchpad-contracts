@@ -35,7 +35,7 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
         stable_coin_fee = _stable_coin_fee;
     }
 
-    function getUserTokens(address creator) external override view returns(address[] memory) {
+    function getUserTokens(address creator) external view override returns (address[] memory) {
         return userTokens[creator];
     }
 
@@ -55,12 +55,7 @@ contract PSIPadTokenDeployer is IPSIPadTokenDeployer, Initializable, OwnableUpgr
         tokenTypes[tokenType] = implementation;
     }
 
-    function createToken(TokenData calldata tokenData)
-        external
-        payable
-        override
-        returns (address token_address)
-    {
+    function createToken(TokenData calldata tokenData) external payable override returns (address token_address) {
         require(msg.value >= stable_coin_fee, 'PSIPadTokenDeployer: FEE_NOT_PAYED');
 
         transferFees(msg.value);
