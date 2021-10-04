@@ -58,7 +58,10 @@ abstract contract ERC20Mintable is
     }
 
     function applyMinter(address minter) external virtual override onlyOwner {
-        require(minterPending[minter] >= block.timestamp, 'ERC20Mintable: MINTER_STILL_PENDING');
+        require(
+            minterPending[minter] > 0 && minterPending[minter] <= block.timestamp,
+            'ERC20Mintable: MINTER_STILL_PENDING'
+        );
         _addMinter(minter);
     }
 
