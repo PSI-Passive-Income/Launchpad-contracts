@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 
 interface IPSIPadCampaign {
     struct CampaignData {
@@ -98,4 +98,9 @@ interface IPSIPadCampaign {
      * Get an participants contribution
      */
     function getGivenAmount(address _address) external view returns (uint256);
+    
+    /**
+     * Sets refund (only possible by psi pad factory)
+     */
+    function emergencyRefund() external;
 }

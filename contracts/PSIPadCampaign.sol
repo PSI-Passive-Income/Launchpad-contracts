@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
@@ -203,7 +203,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
                 }
             }
 
-            payable(owner()).transfer(collected.sub(stableFee).sub(stableLiquidity));
+            safeTransferETH(owner(), collected.sub(stableFee).sub(stableLiquidity));
         } else {
             doRefund = true;
         }
@@ -255,7 +255,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         if (participants[_msgSender()] > 0) {
             uint256 withdrawAmount = participants[_msgSender()];
             participants[_msgSender()] = 0;
-            payable(_msgSender()).transfer(withdrawAmount);
+            safeTransferETH(_msgSender(), withdrawAmount);
         }
     }
 
@@ -295,5 +295,24 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      */
     function getGivenAmount(address _address) public view override returns (uint256) {
         return participants[_address];
+    }
+
+    function emergencyRefund() external onlyPSIPadFactory override {
+        doRefund = true;
+    }
+
+    function safeTransferETH(address to, uint256 amount) internal {
+        (bool sent, bytes memory data) = to.call{value: amount}("");
+        require(sent, string(abi.encodePacked("ETH Transfer Failed: ", _getRevertMsg(data))));
+    }
+    function _getRevertMsg(bytes memory _returnData)
+        internal
+        pure
+        returns (string memory)
+    {
+        // If the _res length is less than 68, then the transaction failed silently (without a revert message)
+        if (_returnData.length < 68) return "Reverted silently";
+        assembly { _returnData := add(_returnData, 0x04) } // Slice the sighash.
+        return abi.decode(_returnData, (string)); // All that remains is the revert string
     }
 }

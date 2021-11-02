@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 
 import './BaseToken.sol';
 import './extensions/crosschain/AnyswapV4ERC20.sol';

@@ -9,11 +9,11 @@ import PSIPadCampaignAbi from '../abi/contracts/PSIPadCampaign.sol/PSIPadCampaig
 const main = async() => {
   const signer = ethers.provider.getSigner("0x2C9C756A7CFd79FEBD2fa9b4C82c10a5dB9D8996"); // bsc test and main
 
-  const baseCampaign = new ethers.Contract("0xd1Fca24b40C8D633885Fa195A90491799a8E15c1", PSIPadCampaignAbi, signer) as PSIPadCampaign; // bsc test
-  // const PSIPadCampaign = await ethers.getContractFactory("PSIPadCampaign");
-  // const baseCampaign = await PSIPadCampaign.connect(signer).deploy() as PSIPadCampaign;
-  // await baseCampaign.deployed();
-  // console.log("PSIPadCampaign deployed to:", baseCampaign.address);
+  // const baseCampaign = new ethers.Contract("0xd1Fca24b40C8D633885Fa195A90491799a8E15c1", PSIPadCampaignAbi, signer) as PSIPadCampaign; // bsc test
+  const PSIPadCampaign = await ethers.getContractFactory("PSIPadCampaign");
+  const baseCampaign = await PSIPadCampaign.connect(signer).deploy() as PSIPadCampaign;
+  await baseCampaign.deployed();
+  console.log("PSIPadCampaign deployed to:", baseCampaign.address);
 
   const PSIPadCampaignFactory = await ethers.getContractFactory("PSIPadCampaignFactory");
   const campaignFactory: PSIPadCampaignFactory = await upgrades.upgradeProxy("0xB390E793a90ADDD68eE92F6AC6c3BAcba06DfF78", PSIPadCampaignFactory) as PSIPadCampaignFactory;

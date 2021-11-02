@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 
 /**
  * @dev For more information on transferAndCall format, see https://github.com/ethereum/EIPs/issues/677

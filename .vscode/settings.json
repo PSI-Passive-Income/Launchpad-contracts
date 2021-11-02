@@ -1,4 +1,4 @@
 {
     "solidity.defaultCompiler": "localNodeModule",
-    "solidity.compileUsingRemoteVersion": "v0.8.6+commit.11564f7e"
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }

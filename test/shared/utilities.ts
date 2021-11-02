@@ -2,11 +2,15 @@ import { BigNumber, Contract, providers, utils } from 'ethers'
 import { ethers, network } from 'hardhat'
 
 export const MINIMUM_LIQUIDITY = BigNumber.from(10).pow(3)
-export const TOTAL_SUPPLY = expandTo18Decimals(10000)
+export const TOTAL_SUPPLY = expandTo9Decimals(10000)
 
 const PERMIT_TYPEHASH = utils.keccak256(
   utils.toUtf8Bytes('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)')
 )
+
+export function expandTo9Decimals(n: number | string): BigNumber {
+  return utils.parseUnits(n.toString(), 18);
+}
 
 export function expandTo18Decimals(n: number | string): BigNumber {
   return utils.parseUnits(n.toString(), 18);

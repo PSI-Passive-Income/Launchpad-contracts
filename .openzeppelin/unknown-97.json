@@ -944,6 +944,133 @@
           }
         }
       }
+    },
+    "be81b82cf19b5e9fe170a6041945ccffecfa4ee18edc7e3a83c4268fae166340": {
+      "address": "0x19D1D09CF77261CA9aD70B4Be25d02F861B36D7d",
+      "txHash": "0x6f0b12c772e5ac0a2a6e5d827a3210b3b679a7fa64be2776df1ec8c3f38b3c6d",
+      "layout": {
+        "storage": [
+          {
+            "contract": "Initializable",
+            "label": "_initialized",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:21"
+          },
+          {
+            "contract": "Initializable",
+            "label": "_initializing",
+            "type": "t_bool",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:26"
+          },
+          {
+            "contract": "ContextUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)50_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:30"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "_owner",
+            "type": "t_address",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:21"
+          },
+          {
+            "contract": "OwnableUpgradeable",
+            "label": "__gap",
+            "type": "t_array(t_uint256)49_storage",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:77"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "default_factory",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:22"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "default_router",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:23"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "fee_aggregator",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:24"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "stable_coin",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:26"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "stable_coin_fee",
+            "type": "t_uint256",
+            "src": "contracts\\PSIPadCampaignFactory.sol:27"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "token_fee",
+            "type": "t_uint256",
+            "src": "contracts\\PSIPadCampaignFactory.sol:28"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "campaigns",
+            "type": "t_array(t_address)dyn_storage",
+            "src": "contracts\\PSIPadCampaignFactory.sol:33"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "userCampaigns",
+            "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)",
+            "src": "contracts\\PSIPadCampaignFactory.sol:38"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "cloneAddress",
+            "type": "t_address",
+            "src": "contracts\\PSIPadCampaignFactory.sol:40"
+          },
+          {
+            "contract": "PSIPadCampaignFactory",
+            "label": "allowedContracts",
+            "type": "t_mapping(t_address,t_bool)",
+            "src": "contracts\\PSIPadCampaignFactory.sol:42"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address"
+          },
+          "t_uint256": {
+            "label": "uint256"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]"
+          },
+          "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+            "label": "mapping(address => uint256[])"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)"
+          },
+          "t_bool": {
+            "label": "bool"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]"
+          }
+        }
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -38,8 +38,12 @@ contract TestBEP20 is IERC20, ERC20, Ownable {
         return owner();
     }
 
+    function decimals() public override pure returns (uint8) {
+        return 9;
+    }
+
     function permit(
-        address owner,
+        address _owner,
         address spender,
         uint256 value,
         uint256 deadline,
@@ -50,11 +54,11 @@ contract TestBEP20 is IERC20, ERC20, Ownable {
             abi.encodePacked(
                 '\x19\x01',
                 DOMAIN_SEPARATOR,
-                keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, nonces[owner]++, deadline))
+                keccak256(abi.encode(PERMIT_TYPEHASH, _owner, spender, value, nonces[_owner]++, deadline))
             )
         );
         address recoveredAddress = ecrecover(digest, v, r, s);
-        require(recoveredAddress != address(0) && recoveredAddress == owner, 'INVALID_SIGNATURE');
-        _approve(owner, spender, value);
+        require(recoveredAddress != address(0) && recoveredAddress == _owner, 'INVALID_SIGNATURE');
+        _approve(_owner, spender, value);
     }
 }

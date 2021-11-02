@@ -1,27 +1,17 @@
 import { HardhatUserConfig } from "hardhat/types";
 
 // import "@nomiclabs/hardhat-ganache";
-import "@nomiclabs/hardhat-waffle";
-import "@typechain/hardhat";
+import '@typechain/hardhat'
+import '@nomiclabs/hardhat-ethers'
+import '@nomiclabs/hardhat-waffle'
 import 'hardhat-abi-exporter';
 import "hardhat-tracer";
 import "hardhat-dependency-compiler";
 import 'hardhat-contract-sizer';
-import "solidity-coverage";
 import '@openzeppelin/hardhat-upgrades';
 import "@nomiclabs/hardhat-etherscan";
 
 require("dotenv").config({path: `${__dirname}/.env`});
-
-let typeChainTarget = process.env.TYPECHAIN_TARGET as "ethers-v5" | "web3-v1" | "truffle-v5"
-if (typeChainTarget !== "web3-v1" && typeChainTarget !==  "truffle-v5")
-  typeChainTarget = "ethers-v5";
-
-let typeChainOutDir = "typechain";
-if (typeChainTarget === "web3-v1") typeChainOutDir = "typechain-web3"
-if (typeChainTarget === "truffle-v5") typeChainOutDir = "typechain-truffle"
-
-console.log(typeChainTarget, typeChainOutDir)
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -33,8 +23,21 @@ const config: HardhatUserConfig = {
       //   blockNumber: 11754056
       // }
     },
+    kovan: {
+      url: `${process.env.KOVAN_INFURA}`,
+      accounts: [`0x${process.env.KOVAN_PRIVATE_KEY}`]
+    },
+    rinkeby: {
+      url: `${process.env.RINKEBY_INFURA}`,
+      accounts: [`0x${process.env.RINKEBY_PRIVATE_KEY}`]
+    },
+    mainnet: {
+      url: `${process.env.MAIN_INFURA}`,
+      accounts: [`0x${process.env.MAIN_PRIVATE_KEY}`],
+      // gasPrice: 200000000000
+    },
     bsctestnet: {
-      url: "https://data-seed-prebsc-1-s2.binance.org:8545",
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       chainId: 97,
       accounts: [`0x${process.env.BSC_TEST_PRIVATE_KEY}`],
     },
@@ -50,29 +53,27 @@ const config: HardhatUserConfig = {
     }
   },
   etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
     apiKey: `${process.env.BSC_API_TOKEN}`
   },
   solidity: {
     compilers: [
-      { 
-        version: "0.8.6",
+      {
+        version: "0.8.9",
         settings: {
           optimizer: {
             enabled: true,
             runs: 30000
           }
-        } 
+        }
       },
-      { 
+      {
         version: "0.7.4",
         settings: {
           optimizer: {
             enabled: true,
             runs: 30000
           }
-        } 
+        }
       }
     ],
   },
@@ -84,14 +85,12 @@ const config: HardhatUserConfig = {
   },
   contractSizer: {
     alphaSort: false,
-    runOnCompile: false,
+    runOnCompile: true,
     disambiguatePaths: false,
   },
   typechain: {
-    outDir: typeChainOutDir,
-    target: typeChainTarget,
-    alwaysGenerateOverloads: true
-  }
+    outDir: 'typechain',
+  },
 };
 
 export default config;

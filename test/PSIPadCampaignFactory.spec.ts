@@ -2,7 +2,7 @@ import chai, { expect } from 'chai'
 import { BigNumber } from 'ethers'
 import { ethers, waffle } from 'hardhat'
 
-import { expandTo18Decimals, TOTAL_SUPPLY } from './shared/utilities'
+import { expandTo9Decimals, expandTo18Decimals, TOTAL_SUPPLY } from './shared/utilities'
 import { v2Fixture } from './shared/fixtures'
 
 import { DPexRouter, IWETH } from '@passive-income/dpex-peripheral/typechain'
@@ -45,10 +45,10 @@ describe('PSIPadCampaignFactory', () => {
     hardCap: expandTo18Decimals(20), // 20 bnb
     start_date: 0,
     end_date: 0,
-    rate: expandTo18Decimals(100), // 1 bnb = 100 tokens
+    rate: expandTo9Decimals(100), // 1 bnb = 100 tokens
     min_allowed: expandTo18Decimals(0.1), // 0.1 bnb
     max_allowed: expandTo18Decimals(10), // 2 bnb
-    pool_rate: expandTo18Decimals(60), // 1 bnb = 60 tokens (could differ from sell rate)
+    pool_rate: expandTo9Decimals(60), // 1 bnb = 60 tokens (could differ from sell rate)
     lock_duration: 60, // 1 minute
     liquidity_rate: 7500 // 75%
   }
@@ -60,7 +60,7 @@ describe('PSIPadCampaignFactory', () => {
 
     const tokensNeeded = await campaignFactory.tokensNeeded(poolData, 0)
     await token.approve(campaignFactory.address, tokensNeeded)
-    await campaignFactory.createCampaign(poolData, token.address, 0)
+    await campaignFactory.createCampaign(poolData, token.address, 0, factory.address, router.address)
     campaign = new ethers.Contract(await campaignFactory.campaigns(0), PSIPadCampaignAbi, owner) as PSIPadCampaign
   }
 
@@ -72,7 +72,7 @@ describe('PSIPadCampaignFactory', () => {
   })
 
   it('Tokens needed', async () => {
-    expect(await campaignFactory.tokensNeeded(poolData, 0)).to.eq(expandTo18Decimals(2914.5))
+    expect(await campaignFactory.tokensNeeded(poolData, 0)).to.eq(expandTo9Decimals(2914.5))
   })
 
   describe('Create campaign', async () => {
@@ -83,38 +83,44 @@ describe('PSIPadCampaignFactory', () => {
 
     it('Fails when softcap is higher then hardcap', async () => {
       const finalData = { ...poolData, hardCap: expandTo18Decimals(9.99) }
-      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: SOFTCAP_HIGHER_THEN_HARDCAP")
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0, factory.address, router.address))
+        .to.be.revertedWith("PSIPadLockFactory: SOFTCAP_HIGHER_THEN_HARDCAP")
     })
     it('Fails when startdate is higher then enddate', async () => {
       const finalData = { ...poolData, end_date: poolData.start_date - 1 }
-      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE")
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0, factory.address, router.address))
+        .to.be.revertedWith("PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE")
     })
     it('Fails when enddate is higher then current timestamp', async () => {
       const finalData = { ...poolData, start_date: poolData.start_date - 1, end_date: poolData.start_date }
-      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE")
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0, factory.address, router.address))
+        .to.be.revertedWith("PSIPadLockFactory: ENDDATE_HIGHER_THEN_CURRENTDATE")
     })
     it('Fails when minimum allowed is higher then hardcap', async () => {
       const finalData = { ...poolData, min_allowed: expandTo18Decimals(20.01) }
-      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP")
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0, factory.address, router.address))
+        .to.be.revertedWith("PSIPadLockFactory: MINIMUM_ALLOWED_HIGHER_THEN_HARDCAP")
     })
     it('Fails when token rate is zero', async () => {
       const finalData = { ...poolData, rate: 0 }
-      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: RATE_IS_ZERO")
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0, factory.address, router.address))
+        .to.be.revertedWith("PSIPadLockFactory: RATE_IS_ZERO")
     })
     it('Fails when liquidity rate is higher then 10000', async () => {
       const finalData = { ...poolData, liquidity_rate: 10001 }
-      await expect(campaignFactory.createCampaign(finalData, token.address, 0)).to.be.revertedWith("PSIPadLockFactory: LIQUIDITY_RATE_0_10000")
+      await expect(campaignFactory.createCampaign(finalData, token.address, 0, factory.address, router.address))
+        .to.be.revertedWith("PSIPadLockFactory: LIQUIDITY_RATE_0_10000")
     })
 
     it('Succeeds', async () => {
       const expectedCampaignAddress = "0x56639dB16Ac50A89228026e42a316B30179A5376"
       
-      await expect(campaignFactory.createCampaign(poolData, token.address, 0))
+      await expect(campaignFactory.createCampaign(poolData, token.address, 0, factory.address, router.address))
         .to.be.revertedWith("ERC20: transfer amount exceeds allowance")
 
       const tokensNeeded = await campaignFactory.tokensNeeded(poolData, 0)
       await token.approve(campaignFactory.address, tokensNeeded)
-      await expect(campaignFactory.createCampaign(poolData, token.address, 0))
+      await expect(campaignFactory.createCampaign(poolData, token.address, 0, factory.address, router.address))
         .to.emit(campaignFactory, 'CampaignAdded')
         .withArgs(expectedCampaignAddress, token.address, owner.address)
 
@@ -223,8 +229,8 @@ describe('PSIPadCampaignFactory', () => {
       const pair = new ethers.Contract(pairAddress, IBEP20Abi, owner) as IBEP20
       expect(await campaign.lp_address()).to.eq(pairAddress)
       expect(await WETH.balanceOf(pairAddress)).to.eq(expandTo18Decimals(15))
-      expect(await token.balanceOf(pairAddress)).to.eq(expandTo18Decimals(900))
-      expect(await token.balanceOf(campaign.address)).to.eq(expandTo18Decimals(2000))
+      expect(await token.balanceOf(pairAddress)).to.eq(expandTo9Decimals(900))
+      expect(await token.balanceOf(campaign.address)).to.eq(expandTo9Decimals(2000))
       expect(await pair.balanceOf(campaign.address)).to.eq(BigNumber.from('116189500386222505555'))
     })
 
@@ -249,8 +255,8 @@ describe('PSIPadCampaignFactory', () => {
       const pair = new ethers.Contract(pairAddress, IBEP20Abi, owner) as IBEP20
       expect(await campaign.lp_address()).to.eq(pairAddress)
       expect(await WETH.balanceOf(pairAddress)).to.eq(expandTo18Decimals(7.5))
-      expect(await token.balanceOf(pairAddress)).to.eq(expandTo18Decimals(450))
-      expect(await token.balanceOf(campaign.address)).to.eq(expandTo18Decimals(2457.25))
+      expect(await token.balanceOf(pairAddress)).to.eq(expandTo9Decimals(450))
+      expect(await token.balanceOf(campaign.address)).to.eq(expandTo9Decimals(2457.25))
       expect(await pair.balanceOf(campaign.address)).to.eq(BigNumber.from('58094750193111252277'))
     })
   })
@@ -306,7 +312,7 @@ describe('PSIPadCampaignFactory', () => {
       const pairAddress = await factory.getPair(WETH.address, token.address);
       const pair = new ethers.Contract(pairAddress, IBEP20Abi, owner) as IBEP20
 
-      expect(await token.balanceOf(owner.address)).to.eq(tokenBalance.add(expandTo18Decimals(2457.25)))
+      expect(await token.balanceOf(owner.address)).to.eq(tokenBalance.add(expandTo9Decimals(2457.25)))
       expect(await token.balanceOf(campaign.address)).to.eq(0)
       expect(await provider.getBalance(campaign.address)).to.eq(0)
       expect(await pair.balanceOf(owner.address)).to.eq(BigNumber.from('58094750193111252277'))
@@ -384,7 +390,7 @@ describe('PSIPadCampaignFactory', () => {
       await campaignFactory.lock(0)
 
       await campaign.connect(user1).withdrawTokens();
-      expect(await token.balanceOf(user1.address)).to.eq(expandTo18Decimals(1000))
+      expect(await token.balanceOf(user1.address)).to.eq(expandTo9Decimals(1000))
     })
   })
 

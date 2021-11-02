@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 
 import './IPSIPadCampaign.sol';
 
@@ -33,6 +33,8 @@ interface IPSIPadCampaignFactory {
 
     function setCloneAddress(address _cloneAddress) external;
 
+    function setAllowedContracts(address[] calldata _allowedContracts, bool allowed) external;
+
     event CampaignAdded(address indexed campaign, address indexed token, address indexed owner);
     event CampaignLocked(address indexed campaign, address indexed token, uint256 indexed collected);
     event CampaignUnlocked(address indexed campaign, address indexed token);
@@ -46,14 +48,18 @@ interface IPSIPadCampaignFactory {
     function createCampaign(
         IPSIPadCampaign.CampaignData calldata _data,
         address _token,
-        uint256 _tokenFeePercentage
+        uint256 _tokenFeePercentage,
+        address _factory,
+        address _router
     ) external returns (address campaign_address);
 
     function createCampaignWithOwner(
         IPSIPadCampaign.CampaignData calldata _data,
         address _owner,
         address _token,
-        uint256 _tokenFeePercentage
+        uint256 _tokenFeePercentage,
+        address _factory,
+        address _router
     ) external returns (address campaign_address);
 
     /**
@@ -74,4 +80,9 @@ interface IPSIPadCampaignFactory {
      * @notice allows the owner to unlock the LP tokens and any leftover tokens after the lock has ended
      */
     function unlock(uint256 campaignId) external;
+
+    /**
+     * @notice allows the factory owner to perform an emergency refund when tokens are locked f.e.
+     */
+    function emergencyRefund(uint256 campaignId) external;
 }

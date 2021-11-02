@@ -3,7 +3,7 @@ import { BigNumber, BigNumberish, constants } from 'ethers'
 import { ethers, waffle } from 'hardhat'
 import { ecsign } from 'ethereumjs-util'
 
-import { expandTo18Decimals, getApprovalDigest, mineBlock, MINIMUM_LIQUIDITY } from './shared/utilities'
+import { expandTo9Decimals, expandTo18Decimals, getApprovalDigest, mineBlock, MINIMUM_LIQUIDITY } from './shared/utilities'
 import { v2Fixture } from './shared/fixtures'
 
 import { DPexRouter, IWETH } from '@passive-income/dpex-peripheral/typechain'
@@ -22,7 +22,7 @@ describe('PSIPadTokenLockFactory', () => {
   const loadFixture = createFixtureLoader([owner], provider)
 
   let startTime: number;
-  let amount: BigNumber = expandTo18Decimals(5000);
+  let amount: BigNumber = expandTo9Decimals(5000);
 
   let psi: PSI
   let token: IBEP20

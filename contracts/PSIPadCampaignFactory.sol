@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
@@ -39,6 +39,8 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
 
     address public override cloneAddress;
 
+    mapping(address => bool) public allowedContracts;
+
     modifier isOwner(uint256 campaignId) {
         require(campaigns.length > campaignId, 'PSIPadCampaignFactory: CAMPAIGN_DOES_NOT_EXIST');
         require(PSIPadCampaign(campaigns[campaignId]).owner() == msg.sender, 'PSIPadCampaignFactory: UNAUTHORIZED');
@@ -62,6 +64,9 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         stable_coin_fee = _stable_coin_fee;
         token_fee = _token_fee;
         cloneAddress = _cloneAddress;
+
+        allowedContracts[_default_factory] = true;
+        allowedContracts[_default_router] = true;
     }
 
     function setDefaultFactory(address _default_factory) external override onlyOwner {
@@ -92,6 +97,12 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         cloneAddress = _cloneAddress;
     }
 
+    function setAllowedContracts(address[] calldata _allowedContracts, bool allowed) external override onlyOwner {
+        for(uint256 idx = 0; idx < _allowedContracts.length; idx++) {
+            allowedContracts[_allowedContracts[idx]] = allowed;
+        }
+    }
+
     function getUserCampaigns(address user) external view override returns (uint256[] memory) {
         return userCampaigns[user];
     }
@@ -103,16 +114,20 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
     function createCampaign(
         IPSIPadCampaign.CampaignData calldata _data,
         address _token,
-        uint256 _tokenFeePercentage
+        uint256 _tokenFeePercentage,
+        address _factory,
+        address _router
     ) external override returns (address campaign_address) {
-        return createCampaignWithOwner(_data, msg.sender, _token, _tokenFeePercentage);
+        return createCampaignWithOwner(_data, msg.sender, _token, _tokenFeePercentage, _factory, _router);
     }
 
     function createCampaignWithOwner(
         IPSIPadCampaign.CampaignData calldata _data,
         address _owner,
         address _token,
-        uint256 _tokenFeePercentage
+        uint256 _tokenFeePercentage,
+        address _factory,
+        address _router
     ) public override returns (address campaign_address) {
         require(_data.softCap < _data.hardCap, 'PSIPadLockFactory: SOFTCAP_HIGHER_THEN_HARDCAP');
         require(_data.start_date < _data.end_date, 'PSIPadLockFactory: STARTDATE_HIGHER_THEN_ENDDATE');
@@ -123,6 +138,8 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
             _data.liquidity_rate >= 0 && _data.liquidity_rate <= 10000,
             'PSIPadLockFactory: LIQUIDITY_RATE_0_10000'
         );
+        require(allowedContracts[_factory], "PSIPadLockFactory: FACTORY_NOT_ALLOWED");
+        require(allowedContracts[_router], "PSIPadLockFactory: ROUTER_NOT_ALLOWED");
 
         if (token_fee > 0) IFeeAggregator(fee_aggregator).addFeeToken(_token);
 
@@ -133,8 +150,8 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
             _data,
             _token,
             _owner,
-            default_factory,
-            default_router,
+            _factory,
+            _router,
             stable_coin_fee,
             campaignTokens,
             feeTokens
@@ -209,5 +226,10 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         address campaign = campaigns[campaignId];
         PSIPadCampaign(campaign).unlock();
         emit CampaignUnlocked(campaign, PSIPadCampaign(campaign).token());
+    }
+
+    function emergencyRefund(uint256 campaignId) external onlyOwner override {
+        address campaign = campaigns[campaignId];
+        PSIPadCampaign(campaign).emergencyRefund();
     }
 }
