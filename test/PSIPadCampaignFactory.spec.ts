@@ -12,6 +12,8 @@ import { PSIPadCampaignFactory, PSIPadCampaign, PSIPadTokenDeployer }  from '../
 
 import PSIPadCampaignAbi from '../abi/contracts/PSIPadCampaign.sol/PSIPadCampaign.json'
 import IBEP20Abi from '@passive-income/psi-contracts/abi/contracts/interfaces/IBEP20.sol/IBEP20.json'
+import { defaultAbiCoder } from '@ethersproject/abi'
+import { solidityPack } from 'ethers/lib/utils'
 
 chai.use(waffle.solidity)
 
@@ -50,7 +52,8 @@ describe('PSIPadCampaignFactory', () => {
     max_allowed: expandTo18Decimals(10), // 2 bnb
     pool_rate: expandTo9Decimals(60), // 1 bnb = 60 tokens (could differ from sell rate)
     lock_duration: 60, // 1 minute
-    liquidity_rate: 7500 // 75%
+    liquidity_rate: 7500, // 75%
+    whitelist_enabled: false
   }
 
   let campaign: PSIPadCampaign;
@@ -174,6 +177,49 @@ describe('PSIPadCampaignFactory', () => {
         .to.emit(campaign, 'TokensBought')
         .withArgs(user2.address, expandTo18Decimals(10.00))
 
+      expect(await campaign.collected()).to.eq(expandTo18Decimals(20.00))
+      expect(await campaign.finalized()).to.eq(true)
+      expect(await provider.getBalance(campaign.address)).to.eq(expandTo18Decimals(20.00))
+    })
+  })
+
+  describe('Whitelist', async () => {
+    beforeEach(async function() {
+      await addDefaultCampaign()
+    })
+
+    it('Fails to enable when caller is not the owner', async () => {
+      await expect(campaign.connect(user1).setWhitelistEnabled(true)).to.be.revertedWith("PSIPadCampaign: UNAUTHORIZED")
+      await expect(campaign.connect(user1).addWhitelist('0x', true)).to.be.revertedWith("PSIPadCampaign: UNAUTHORIZED")
+    })
+    it('Succeeds', async () => {
+      await campaign.setWhitelistEnabled(true)
+      let data = solidityPack(["address"], [user1.address])
+      data += solidityPack(["address"], [user2.address]).substr(2)
+      await campaign.addWhitelist(data, true)
+
+      expect(await campaign.whitelisted(user1.address)).to.eq(true)
+      expect(await campaign.whitelisted(user2.address)).to.eq(true)
+    })
+  })
+
+  describe('Buy with whitelist', async () => {
+    beforeEach(async function() {
+      await addDefaultCampaign()
+
+      await campaign.setWhitelistEnabled(true)
+      let data = solidityPack(["address"], [user1.address])
+      data += solidityPack(["address"], [user2.address]).substr(2)
+      await campaign.addWhitelist(data, true)
+      await provider.send("evm_setNextBlockTimestamp", [poolData.start_date])
+    })
+    it('Fails when not whitelisted', async () => {
+      await expect(campaign.connect(user3).buyTokens({ value: expandTo18Decimals(10.00) }))
+        .to.be.revertedWith("PSIPadCampaign: NOT_WHITELISTED")
+    })
+    it('Succeeds and finalized', async () => {
+      await campaign.connect(user1).buyTokens({ value: expandTo18Decimals(10.00) })
+      await campaign.connect(user2).buyTokens({ value: expandTo18Decimals(10.00) })
       expect(await campaign.collected()).to.eq(expandTo18Decimals(20.00))
       expect(await campaign.finalized()).to.eq(true)
       expect(await provider.getBalance(campaign.address)).to.eq(expandTo18Decimals(20.00))

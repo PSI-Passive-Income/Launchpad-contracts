@@ -141,7 +141,8 @@ contract PSIPadCampaignFactory is IPSIPadCampaignFactory, Initializable, Ownable
         require(allowedContracts[_factory], "PSIPadLockFactory: FACTORY_NOT_ALLOWED");
         require(allowedContracts[_router], "PSIPadLockFactory: ROUTER_NOT_ALLOWED");
 
-        if (token_fee > 0) IFeeAggregator(fee_aggregator).addFeeToken(_token);
+        if (token_fee > 0 && !IFeeAggregator(fee_aggregator).isFeeToken(_token))
+            IFeeAggregator(fee_aggregator).addFeeToken(_token);
 
         campaign_address = ClonesUpgradeable.clone(cloneAddress);
 

@@ -14,6 +14,7 @@ interface IPSIPadCampaign {
         uint256 pool_rate;
         uint256 lock_duration;
         uint256 liquidity_rate;
+        bool whitelist_enabled;
     }
 
     function psipad_factory() external view returns(address);
@@ -30,6 +31,9 @@ interface IPSIPadCampaign {
     function finalized() external view returns(bool);
     function locked() external view returns(bool);
     function doRefund() external view returns(bool);
+
+    function whitelistEnabled() external view returns (bool);
+    function whitelisted(address _address) external view returns (bool);
 
     function token() external view returns(address);
     function softCap() external view returns(uint256);
@@ -103,4 +107,10 @@ interface IPSIPadCampaign {
      * Sets refund (only possible by psi pad factory)
      */
     function emergencyRefund() external;
+
+    function setWhitelistEnabled(bool enabled) external;
+    /**
+     * packed array of addresses to whitelist
+     */
+    function addWhitelist(bytes calldata data, bool whitelist) external;
 }

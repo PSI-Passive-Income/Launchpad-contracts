@@ -39,6 +39,9 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
 
     mapping(address => uint256) private participants;
 
+    bool public whitelistEnabled = false;
+    mapping(address => bool) public override whitelisted;
+
     address public override token;
     uint256 public override softCap;
     uint256 public override hardCap;
@@ -57,8 +60,13 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         psipad_factory = _msgSender();
     }
 
+    modifier onlyPSIPadFactoryOrOwner() {
+        require(psipad_factory == _msgSender() || owner() == _msgSender(), 'PSIPadCampaign: UNAUTHORIZED');
+        _;
+    }
+
     modifier onlyPSIPadFactory() {
-        require(_msgSender() == psipad_factory, 'PSIPadCampaign: UNAUTHORIZED');
+        require(psipad_factory == _msgSender(), 'PSIPadCampaign: UNAUTHORIZED');
         _;
     }
 
@@ -92,6 +100,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         pool_rate = _data.pool_rate;
         lock_duration = _data.lock_duration;
         liquidity_rate = _data.liquidity_rate;
+        whitelistEnabled = _data.whitelist_enabled;
         
         psipad_factory = _msgSender();
         factory_address = _factory_address;
@@ -108,6 +117,7 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
      */
     function buyTokens() external payable override {
         require(isLive(), 'PSIPadCampaign: CAMPAIGN_NOT_LIVE');
+        require(!whitelistEnabled || whitelisted[_msgSender()], 'PSIPadCampaign: NOT_WHITELISTED');
         require(msg.value >= min_allowed, 'PSIPadCampaign: BELOW_MIN_AMOUNT');
         require(getGivenAmount(_msgSender()).add(msg.value) <= max_allowed, 'PSIPadCampaign: ABOVE_MAX_AMOUNT');
         require((msg.value <= getRemaining()), 'PSIPadCampaign: CONTRACT_INSUFFICIENT_TOKENS');
@@ -314,5 +324,25 @@ contract PSIPadCampaign is IPSIPadCampaign, Initializable, OwnableUpgradeable {
         if (_returnData.length < 68) return "Reverted silently";
         assembly { _returnData := add(_returnData, 0x04) } // Slice the sighash.
         return abi.decode(_returnData, (string)); // All that remains is the revert string
+    }
+
+
+    function setWhitelistEnabled(bool enabled) external override onlyPSIPadFactoryOrOwner {
+        whitelistEnabled = enabled;
+    }
+    /**
+     * packed array of addresses to whitelist
+     */
+    function addWhitelist(bytes calldata data, bool whitelist) external override onlyPSIPadFactoryOrOwner {
+        uint addressCount = data.length / 20;
+        for(uint256 i = 0; i < addressCount; i++){
+            whitelisted[bytesToAddress(data[i*20:(i+1)*20])] = whitelist;
+        }
+    }
+    function bytesToAddress(bytes calldata data) private pure returns (address addr) {
+        bytes memory b = data;
+        assembly {
+          addr := mload(add(b, 20))
+        }
     }
 }
